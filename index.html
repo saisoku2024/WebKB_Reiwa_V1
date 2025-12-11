@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>REIWA Internal System</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
-        /* --- CSS FIX: Pastikan semua style ada di dalam tag ini --- */
         :root {
             --primary: #0056b3; 
             --primary-dark: #004494;
@@ -16,243 +16,62 @@
             --text: #333;
             --border-radius: 10px;
         }
-
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-            overflow: hidden; /* Mencegah scroll ganda */
-        }
-
-        /* --- LAYOUT UTAMA --- */
-        .app-container {
-            display: flex;
-            flex: 1;
-            height: 100%;
-            overflow: hidden;
-        }
-
-        /* --- SIDEBAR --- */
-        .sidebar {
-            width: 260px;
-            background-color: white;
-            border-right: 1px solid #e1e4e8;
-            display: flex;
-            flex-direction: column;
-            padding: 25px 20px;
-            flex-shrink: 0;
-        }
-
-        .logo {
-            font-size: 1.4rem;
-            font-weight: 800;
-            color: var(--primary);
-            margin-bottom: 40px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            letter-spacing: -0.5px;
-        }
-
-        .nav-btn {
-            background: none;
-            border: none;
-            width: 100%;
-            padding: 12px 15px;
-            text-align: left;
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: #666;
-            cursor: pointer;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .nav-btn:hover { background-color: #f8f9fa; color: var(--primary); }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        .app-container { display: flex; flex: 1; height: 100%; overflow: hidden; }
         
-        .nav-btn.active {
-            background-color: #e3f2fd;
-            color: var(--primary);
-        }
-
+        /* SIDEBAR */
+        .sidebar { width: 260px; background-color: white; border-right: 1px solid #e1e4e8; display: flex; flex-direction: column; padding: 25px 20px; flex-shrink: 0; }
+        .logo { font-size: 1.4rem; font-weight: 800; color: var(--primary); margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
+        .nav-btn { background: none; border: none; width: 100%; padding: 12px 15px; text-align: left; font-size: 0.95rem; font-weight: 600; color: #666; cursor: pointer; border-radius: 8px; margin-bottom: 8px; transition: all 0.2s; }
+        .nav-btn:hover { background-color: #f8f9fa; color: var(--primary); }
+        .nav-btn.active { background-color: #e3f2fd; color: var(--primary); }
         .nav-btn.active.wa-mode { background-color: #e8f5e9; color: #1b5e20; }
         .nav-btn.active.add-mode { background-color: #fff3e0; color: #e65100; }
+        .nav-btn.active.setting-mode { background-color: #eceff1; color: #37474f; }
 
-        /* --- MAIN CONTENT --- */
-        .main-content {
-            flex: 1;
-            padding: 30px 40px;
-            overflow-y: auto;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-        }
+        /* MAIN CONTENT */
+        .main-content { flex: 1; padding: 30px 40px; overflow-y: auto; display: flex; flex-direction: column; }
+        .header-section { margin-bottom: 25px; }
+        .page-title { margin: 0 0 15px 0; font-size: 1.8rem; color: #2c3e50; }
+        .search-wrapper { position: sticky; top: 0; background: var(--bg); z-index: 10; padding-bottom: 10px; }
+        input#search { width: 100%; padding: 16px 20px; font-size: 16px; border: 1px solid #ddd; border-radius: 12px; outline: none; box-shadow: 0 4px 12px rgba(0,0,0,0.03); box-sizing: border-box; }
+        input#search:focus { border-color: var(--primary); box-shadow: 0 4px 15px rgba(0, 86, 179, 0.1); }
+        #result-count { text-align: right; font-size: 0.85rem; color: #888; margin-top: 8px; font-weight: 500; }
 
-        /* HEADER & SEARCH */
-        .header-section {
-            margin-bottom: 25px;
-        }
-
-        .page-title {
-            margin: 0 0 15px 0;
-            font-size: 1.8rem;
-            color: #2c3e50;
-        }
-
-        .search-wrapper {
-            position: sticky;
-            top: 0;
-            background: var(--bg);
-            z-index: 10;
-            padding-bottom: 10px;
-        }
-
-        input#search {
-            width: 100%;
-            padding: 16px 20px;
-            font-size: 16px;
-            border: 1px solid #ddd;
-            border-radius: 12px;
-            outline: none;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-            transition: all 0.3s;
-            box-sizing: border-box;
-        }
-        input#search:focus {
-            border-color: var(--primary);
-            box-shadow: 0 4px 15px rgba(0, 86, 179, 0.1);
-        }
-
-        #result-count {
-            text-align: right;
-            font-size: 0.85rem;
-            color: #888;
-            margin-top: 8px;
-            font-weight: 500;
-        }
-
-        /* --- CARD STYLES --- */
-        .card {
-            background: white;
-            padding: 24px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-            border-left: 5px solid #ccc;
-            transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
-
-        /* Style Khusus Knowledge Base (Teknis) */
+        /* CARDS */
+        .card { background: white; padding: 24px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border-left: 5px solid #ccc; position: relative; }
         .card.type-tech { border-left-color: var(--tech-color); }
-        .card.type-tech .card-content { 
-            font-family: 'Consolas', monospace; 
-            font-size: 0.95em; 
-            background: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            color: #444;
-            line-height: 1.6;
-            white-space: pre-wrap;
-        }
-
-        /* Style Khusus Template WA */
+        .card.type-tech .card-content { font-family: 'Consolas', monospace; font-size: 0.95em; background: #f8f9fa; padding: 15px; border-radius: 8px; color: #444; white-space: pre-wrap; }
         .card.type-wa { border-left-color: var(--wa-color); }
-        .card.type-wa .card-content {
-            background: #e8f5e9;
-            padding: 20px;
-            border-radius: 0 12px 12px 12px;
-            color: #1b5e20;
-            font-style: italic;
-            position: relative;
-            white-space: pre-wrap;
-        }
-        .card.type-wa .card-content::before {
-            content: "💬 Template Balasan";
-            position: absolute;
-            top: -22px;
-            left: 0;
-            font-size: 0.75rem;
-            color: var(--wa-color);
-            font-weight: 700;
-            font-style: normal;
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-            gap: 10px;
-        }
+        .card.type-wa .card-content { background: #e8f5e9; padding: 20px; border-radius: 0 12px 12px 12px; color: #1b5e20; font-style: italic; white-space: pre-wrap; }
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
         .card-title { font-weight: 700; font-size: 1.15rem; color: #222; margin: 0; }
-        
-        .badge { 
-            font-size: 0.75rem; 
-            padding: 4px 10px; 
-            border-radius: 20px; 
-            background: #eee; 
-            color: #555; 
-            font-weight: 600;
-        }
+        .badge { font-size: 0.75rem; padding: 4px 10px; border-radius: 20px; background: #eee; color: #555; font-weight: 600; }
         .badge-model { background: #e3f2fd; color: #0d47a1; }
-
-        .btn-copy {
-            margin-top: 15px;
-            padding: 10px 18px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: background 0.2s;
-        }
+        .btn-copy { margin-top: 15px; padding: 10px 18px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; transition: background 0.2s; }
         .btn-copy:hover { background: var(--primary-dark); }
         .type-wa .btn-copy { background: var(--wa-color); }
         .type-wa .btn-copy:hover { background: #1ebc57; }
+        .btn-delete { position: absolute; top: 15px; right: 15px; background: none; border: none; color: #ccc; cursor: pointer; font-size: 1.2rem; }
+        .btn-delete:hover { color: red; }
 
-        /* --- FORM TAMBAH DATA --- */
-        #add-section { display: none; width: 100%; max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        /* UPLOAD SECTION */
+        #add-section, #setting-section { display: none; width: 100%; max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
         .form-group { margin-bottom: 20px; }
         .form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9rem; color: #444; }
         .form-control, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; box-sizing: border-box; }
-        .form-control:focus { border-color: var(--primary); outline: none; }
         textarea.form-control { height: 150px; resize: vertical; font-family: inherit; }
-        .btn-save { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: background 0.2s; }
-        .btn-save:hover { background: var(--primary-dark); }
+        .btn-save { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; }
+        .divider { border-top: 1px solid #eee; margin: 30px 0; }
+        .btn-danger { background-color: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
+        .upload-box { border: 2px dashed #ddd; padding: 30px; text-align: center; border-radius: 10px; cursor: pointer; background: #fafafa; transition: 0.3s; }
+        .upload-box:hover { border-color: var(--primary); background: #e3f2fd; }
 
-        /* Toast Notification */
-        #toast { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 50px; padding: 16px; position: fixed; z-index: 1000; bottom: 30px; left: 50%; transform: translateX(-50%); font-weight: 500; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        #toast { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 50px; padding: 16px; position: fixed; z-index: 1000; bottom: 30px; left: 50%; transform: translateX(-50%); font-weight: 500; }
         #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
-        
         @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
         @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
-
-        /* Mobile Responsive */
-        @media (max-width: 768px) {
-            .app-container { flex-direction: column; height: auto; overflow: visible; }
-            .sidebar { width: 100%; padding: 15px; flex-direction: row; overflow-x: auto; box-sizing: border-box; border-right: none; border-bottom: 1px solid #ddd; position: sticky; top: 0; z-index: 100; gap: 10px; }
-            .logo { display: none; }
-            .nav-btn { font-size: 0.85rem; padding: 10px 15px; white-space: nowrap; margin-bottom: 0; justify-content: center; }
-            .main-content { padding: 20px; overflow: visible; }
-            .search-wrapper { position: static; }
-            body { height: auto; }
-        }
+        @media (max-width: 768px) { .app-container { flex-direction: column; overflow: visible; } .sidebar { width: 100%; padding: 10px; flex-direction: row; overflow-x: auto; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid #ddd; } .logo { display: none; } .main-content { padding: 15px; } }
     </style>
 </head>
 <body>
@@ -262,12 +81,12 @@
         <div class="logo">📘 REIWA KB</div>
         <button class="nav-btn active" onclick="switchTab('tech')">🛠️ Knowledge Base</button>
         <button class="nav-btn" onclick="switchTab('wa')">💬 Template WA</button>
-        <div style="flex:1" class="desktop-spacer"></div> 
-        <button class="nav-btn add-mode" onclick="switchTab('add')">➕ Tambah Data</button>
+        <div style="flex:1"></div> 
+        <button class="nav-btn add-mode" onclick="switchTab('add')">➕ Tambah / Import</button>
+        <button class="nav-btn setting-mode" onclick="switchTab('setting')">⚙️ Pengaturan</button>
     </div>
 
     <div class="main-content">
-        
         <div id="view-area">
             <div class="header-section">
                 <h2 id="page-title" class="page-title">Panduan Teknis</h2>
@@ -276,20 +95,30 @@
                     <div id="result-count"></div>
                 </div>
             </div>
-            
             <div id="results-grid"></div>
         </div>
 
         <div id="add-section">
-            <h2 style="margin-top:0; color: var(--primary); text-align: center; margin-bottom: 10px;">Tambah Data Baru</h2>
-            <p style="text-align:center; color:#666; margin-bottom:30px; font-size: 0.9rem;">Data akan tersimpan otomatis di browser ini (Local Storage).</p>
-            
+            <div style="text-align:center; margin-bottom:30px;">
+                <h2 style="color: var(--primary);">Import Banyak Data</h2>
+                <p style="color:#666; font-size:0.9rem;">Upload file Excel (.csv) untuk memasukkan ratusan data sekaligus.</p>
+                <div class="upload-box" onclick="document.getElementById('csvFile').click()">
+                    <span style="font-size:2rem;">📂</span><br>
+                    <strong>Klik untuk Upload CSV</strong>
+                    <input type="file" id="csvFile" accept=".csv" style="display:none" onchange="handleFileUpload(this)">
+                </div>
+                <p style="font-size:0.8rem; color:#888; margin-top:10px;">Format Header Kolom: <code>type, title, model, category, content</code></p>
+            </div>
+
+            <div class="divider"></div>
+
+            <h3 style="color:#444;">Atau Tambah Satu per Satu</h3>
             <form id="addForm" onsubmit="saveData(event)">
                 <div class="form-group">
-                    <label>Kategori Data:</label>
+                    <label>Jenis:</label>
                     <select id="new-type" class="form-control">
                         <option value="tech">🛠️ Knowledge Base (Teknis)</option>
-                        <option value="wa">💬 Template WA (Customer Service)</option>
+                        <option value="wa">💬 Template WA</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -297,79 +126,81 @@
                     <input type="text" id="new-title" class="form-control" placeholder="Contoh: Kode Error E1" required>
                 </div>
                 <div class="form-group">
-                    <label>Model Produk:</label>
+                    <label>Model:</label>
                     <input type="text" id="new-model" class="form-control" placeholder="Contoh: DB-3301C" required>
                 </div>
                 <div class="form-group">
-                    <label>Konten / Jawaban:</label>
-                    <textarea id="new-content" class="form-control" placeholder="Tulis jawaban teknis atau skrip WA di sini..." required></textarea>
+                    <label>Kategori:</label>
+                    <input type="text" id="new-cat" class="form-control" placeholder="Contoh: Troubleshooting" required>
+                </div>
+                <div class="form-group">
+                    <label>Isi Konten:</label>
+                    <textarea id="new-content" class="form-control" placeholder="Tulis jawaban di sini..." required></textarea>
                 </div>
                 <button type="submit" class="btn-save">Simpan Data</button>
             </form>
         </div>
 
+        <div id="setting-section">
+            <h2>Pengaturan Data</h2>
+            <p>Total Data Tersimpan: <strong id="total-data">0</strong></p>
+            <div class="divider"></div>
+            <button class="btn-danger" onclick="clearAllData()">⚠️ Hapus SEMUA Data</button>
+        </div>
     </div>
 </div>
 
-<div id="toast">Berhasil disalin!</div>
+<div id="toast">Berhasil!</div>
 
 <script>
-    // --- DATABASE AWAL (CONTOH) ---
+    // Initial Data Sample
     const initialData = [
-        { type: 'tech', title: "Spesifikasi Daya (DB-3301C)", content: "Tegangan 220V/50Hz. Daya Pemanas 500W. Daya Total 580W. Kompresor 0.74A.", model: "DB-3301C" },
-        { type: 'tech', title: "Fitur Sterilisasi UV-C", content: "Indikator UV berkedip 30 menit saat tangki penuh untuk sterilisasi. Lampu diam = standby.", model: "DB-3301C" },
-        { type: 'wa', title: "Sapaan & Info DB-3301C", content: "Halo Kak! Tipe **DB-3301C** adalah dispenser pintar flagship kami.\n✨ Fitur:\n- Layar Digital\n- Mode Jadwal (Hemat Listrik)\n- UV-C Sterilization\n- Dingin Kompresor.", model: "DB-3301C" },
-        { type: 'wa', title: "Keluhan Air Tidak Dingin", content: "Mohon maaf Kak. Untuk unit baru, pastikan:\n1. Sakelar HIJAU di belakang sudah ON.\n2. Unit butuh waktu ±1 jam untuk dingin maksimal.\n3. Jarak belakang dispenser ke tembok minimal 20cm.", model: "ALL DB Series" }
+        { type: 'tech', title: "Spesifikasi Daya (DB-3301C)", content: "Tegangan 220V/50Hz. Daya Pemanas 500W.", model: "DB-3301C", category: "Spesifikasi" },
+        { type: 'wa', title: "Sapaan Customer", content: "Halo Kak, ada yang bisa dibantu?", model: "Umum", category: "Sapaan" }
     ];
 
-    // Load Data
-    let kbData = JSON.parse(localStorage.getItem('reiwa_kb_data')) || initialData;
-    let currentTab = 'tech'; 
+    let kbData = JSON.parse(localStorage.getItem('reiwa_kb_v2')) || initialData;
+    let currentTab = 'tech';
 
-    // DOM Elements
+    // Elements
+    const views = {
+        view: document.getElementById('view-area'),
+        add: document.getElementById('add-section'),
+        setting: document.getElementById('setting-section')
+    };
+    const titleEl = document.getElementById('page-title');
     const searchInput = document.getElementById('search');
-    const resultsContainer = document.getElementById('results-grid');
-    const viewArea = document.getElementById('view-area');
-    const addSection = document.getElementById('add-section');
-    const pageTitle = document.getElementById('page-title');
-    const countLabel = document.getElementById('result-count');
-    const navBtns = document.querySelectorAll('.nav-btn');
+    const grid = document.getElementById('results-grid');
 
-    // --- FUNGSI NAVIGASI ---
     function switchTab(tab) {
         currentTab = tab;
+        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
         
-        // Update UI Tombol
-        navBtns.forEach(btn => btn.classList.remove('active'));
-        if(tab === 'tech') navBtns[0].classList.add('active');
-        if(tab === 'wa') navBtns[1].classList.add('active');
-        if(tab === 'add') navBtns[2].classList.add('active');
+        // Hide all views
+        Object.values(views).forEach(el => el.style.display = 'none');
 
-        // Tampilkan/Sembunyikan Area
-        if (tab === 'add') {
-            viewArea.style.display = 'none';
-            addSection.style.display = 'block';
+        if(tab === 'add') {
+            views.add.style.display = 'block';
+            document.querySelector('.add-mode').classList.add('active');
+        } else if (tab === 'setting') {
+            views.setting.style.display = 'block';
+            document.getElementById('total-data').innerText = kbData.length;
+            document.querySelector('.setting-mode').classList.add('active');
         } else {
-            viewArea.style.display = 'block';
-            addSection.style.display = 'none';
-            
-            if (tab === 'tech') {
-                pageTitle.innerText = "🛠️ Knowledge Base (Panduan Teknis)";
-                pageTitle.style.color = "var(--tech-color)";
-                searchInput.placeholder = "Cari spesifikasi, error code, atau prosedur teknis...";
+            views.view.style.display = 'block';
+            if(tab === 'tech') {
+                titleEl.innerText = "🛠️ Knowledge Base";
+                document.querySelectorAll('.nav-btn')[0].classList.add('active');
             } else {
-                pageTitle.innerText = "💬 Template Balasan WA";
-                pageTitle.style.color = "var(--wa-color)";
-                searchInput.placeholder = "Cari skrip balasan untuk pelanggan...";
+                titleEl.innerText = "💬 Template WA";
+                document.querySelectorAll('.nav-btn')[1].classList.add('active');
             }
             renderData();
         }
     }
 
-    // --- FUNGSI RENDER DATA ---
     function renderData() {
         const query = searchInput.value.toLowerCase();
-        
         const filtered = kbData.filter(item => {
             return item.type === currentTab && (
                 item.title.toLowerCase().includes(query) || 
@@ -378,79 +209,123 @@
             );
         });
 
-        countLabel.innerText = `${filtered.length} Data Ditemukan`;
-        resultsContainer.innerHTML = '';
+        document.getElementById('result-count').innerText = `${filtered.length} Data`;
+        grid.innerHTML = '';
 
-        if (filtered.length === 0) {
-            resultsContainer.innerHTML = `
-                <div style="text-align:center; padding:50px; color:#999;">
-                    <p style="font-size:3rem; margin:0;">📭</p>
-                    <p>Tidak ada data ditemukan.</p>
-                </div>`;
+        if(filtered.length === 0) {
+            grid.innerHTML = '<div style="text-align:center; padding:40px; color:#999;">Tidak ada data.</div>';
             return;
         }
 
-        filtered.forEach(item => {
+        filtered.forEach((item, index) => {
+            // Find original index to allow deletion
+            const originalIndex = kbData.indexOf(item);
+            
             const card = document.createElement('div');
             card.className = `card type-${item.type}`;
-            
-            // Konversi Enter (\n) menjadi <br>
-            const displayContent = item.content;
-
             card.innerHTML = `
+                <button class="btn-delete" onclick="deleteItem(${originalIndex})" title="Hapus">&times;</button>
                 <div class="card-header">
                     <div class="card-title">${item.title}</div>
-                    <span class="badge badge-model">${item.model}</span>
+                    <div>
+                        <span class="badge badge-model">${item.model}</span>
+                        ${item.category ? `<span class="badge" style="background:#e0e0e0">${item.category}</span>` : ''}
+                    </div>
                 </div>
-                <div class="card-content">${displayContent}</div>
-                <button class="btn-copy" onclick="copyToClipboard(this)">
-                    📋 Salin Teks
-                </button>
+                <div class="card-content">${item.content.replace(/\n/g, '<br>')}</div>
+                <button class="btn-copy" onclick="copyText(this)">📋 Salin</button>
             `;
-            resultsContainer.appendChild(card);
+            grid.appendChild(card);
         });
     }
 
-    // --- FUNGSI TAMBAH DATA ---
+    // --- CSV IMPORT FEATURE ---
+    function handleFileUpload(input) {
+        const file = input.files[0];
+        if (!file) return;
+
+        Papa.parse(file, {
+            header: true,
+            skipEmptyLines: true,
+            complete: function(results) {
+                const newData = results.data;
+                let count = 0;
+                
+                // Validate and add
+                newData.forEach(row => {
+                    if(row.type && row.title && row.content) {
+                        kbData.push({
+                            type: row.type.toLowerCase().trim(),
+                            title: row.title,
+                            model: row.model || 'General',
+                            category: row.category || 'General',
+                            content: row.content
+                        });
+                        count++;
+                    }
+                });
+
+                saveToStorage();
+                showToast(`${count} Data berhasil diimport!`);
+                switchTab('tech');
+            },
+            error: function(err) {
+                alert("Gagal membaca file: " + err.message);
+            }
+        });
+    }
+
     function saveData(e) {
         e.preventDefault();
-        
-        const newType = document.getElementById('new-type').value;
-        const newTitle = document.getElementById('new-title').value;
-        const newModel = document.getElementById('new-model').value;
-        const newContent = document.getElementById('new-content').value;
-
-        kbData.push({ type: newType, title: newTitle, model: newModel, content: newContent });
-        localStorage.setItem('reiwa_kb_data', JSON.stringify(kbData));
-
+        const newItem = {
+            type: document.getElementById('new-type').value,
+            title: document.getElementById('new-title').value,
+            model: document.getElementById('new-model').value,
+            category: document.getElementById('new-cat').value,
+            content: document.getElementById('new-content').value
+        };
+        kbData.push(newItem);
+        saveToStorage();
         document.getElementById('addForm').reset();
-        showToast("✅ Data Berhasil Disimpan!");
-        switchTab(newType);
+        showToast("Data Tersimpan!");
+        switchTab(newItem.type);
     }
 
-    // --- FUNGSI COPY ---
-    function copyToClipboard(btn) {
-        const contentDiv = btn.previousElementSibling;
-        const text = contentDiv.innerText;
-        
-        navigator.clipboard.writeText(text).then(() => {
-            showToast("✅ Teks berhasil disalin!");
-        });
+    function deleteItem(index) {
+        if(confirm('Hapus data ini?')) {
+            kbData.splice(index, 1);
+            saveToStorage();
+            renderData();
+        }
+    }
+
+    function clearAllData() {
+        if(confirm('YAKIN HAPUS SEMUA DATA? Ini tidak bisa dibatalkan.')) {
+            kbData = [];
+            saveToStorage();
+            alert("Semua data terhapus.");
+            location.reload();
+        }
+    }
+
+    function saveToStorage() {
+        localStorage.setItem('reiwa_kb_v2', JSON.stringify(kbData));
+    }
+
+    function copyText(btn) {
+        const text = btn.previousElementSibling.innerText;
+        navigator.clipboard.writeText(text).then(() => showToast("Teks disalin!"));
     }
 
     function showToast(msg) {
-        const x = document.getElementById("toast");
-        x.innerText = msg;
-        x.className = "show";
-        setTimeout(() => { x.className = x.className.replace("show", ""); }, 3000);
+        const t = document.getElementById('toast');
+        t.innerText = msg;
+        t.className = "show";
+        setTimeout(() => t.className = "", 3000);
     }
 
-    // Listener
     searchInput.addEventListener('input', renderData);
-    
-    // Init
-    switchTab('tech');
-
+    switchTab('tech'); // Init
 </script>
 
 </body>
