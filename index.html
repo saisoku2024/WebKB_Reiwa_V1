@@ -1,167 +1,7 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>REIWA Smart System</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
-
-    <style>
-        /* --- STYLE SAMA SEPERTI SEBELUMNYA (DIPERSINGKAT) --- */
-        :root { --primary: #0056b3; --primary-dark: #004494; --wa-color: #25D366; --tech-color: #546e7a; --bg: #f4f6f8; --text: #333; --border-radius: 10px; }
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg); color: var(--text); margin: 0; padding: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        .app-container { display: flex; flex: 1; height: 100%; overflow: hidden; }
-        
-        .sidebar { width: 260px; background-color: white; border-right: 1px solid #e1e4e8; display: flex; flex-direction: column; padding: 25px 20px; flex-shrink: 0; }
-        .logo { font-size: 1.4rem; font-weight: 800; color: var(--primary); margin-bottom: 40px; display: flex; align-items: center; gap: 10px; }
-        .nav-btn { background: none; border: none; width: 100%; padding: 12px 15px; text-align: left; font-size: 0.95rem; font-weight: 600; color: #666; cursor: pointer; border-radius: 8px; margin-bottom: 8px; transition: all 0.2s; }
-        .nav-btn:hover { background-color: #f8f9fa; color: var(--primary); }
-        .nav-btn.active { background-color: #e3f2fd; color: var(--primary); }
-        .nav-btn.active.wa-mode { background-color: #e8f5e9; color: #1b5e20; }
-        .nav-btn.active.add-mode { background-color: #fff3e0; color: #e65100; }
-        .nav-btn.active.setting-mode { background-color: #eceff1; color: #37474f; }
-
-        .main-content { flex: 1; padding: 30px 40px; overflow-y: auto; display: flex; flex-direction: column; }
-        .header-section { margin-bottom: 25px; }
-        .page-title { margin: 0 0 15px 0; font-size: 1.8rem; color: #2c3e50; }
-        .search-wrapper { position: sticky; top: 0; background: var(--bg); z-index: 10; padding-bottom: 10px; }
-        input#search { width: 100%; padding: 16px 20px; font-size: 16px; border: 1px solid #ddd; border-radius: 12px; outline: none; box-shadow: 0 4px 12px rgba(0,0,0,0.03); box-sizing: border-box; }
-        input#search:focus { border-color: var(--primary); box-shadow: 0 4px 15px rgba(0, 86, 179, 0.1); }
-        #result-count { text-align: right; font-size: 0.85rem; color: #888; margin-top: 8px; font-weight: 500; }
-
-        /* CARDS */
-        .card { background: white; padding: 24px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.04); border-left: 5px solid #ccc; position: relative; }
-        .card.type-tech { border-left-color: var(--tech-color); }
-        .card.type-tech .card-content { font-family: 'Consolas', monospace; font-size: 0.95em; background: #f8f9fa; padding: 15px; border-radius: 8px; color: #444; white-space: pre-wrap; }
-        .card.type-wa { border-left-color: var(--wa-color); }
-        .card.type-wa .card-content { background: #e8f5e9; padding: 20px; border-radius: 0 12px 12px 12px; color: #1b5e20; font-style: italic; white-space: pre-wrap; }
-        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; flex-wrap: wrap; gap: 10px; }
-        .card-title { font-weight: 700; font-size: 1.15rem; color: #222; margin: 0; }
-        .badge { font-size: 0.75rem; padding: 4px 10px; border-radius: 20px; background: #eee; color: #555; font-weight: 600; }
-        .badge-model { background: #e3f2fd; color: #0d47a1; }
-        .btn-copy { margin-top: 15px; padding: 10px 18px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; display: inline-flex; align-items: center; gap: 8px; transition: background 0.2s; }
-        .btn-copy:hover { background: var(--primary-dark); }
-        .type-wa .btn-copy { background: var(--wa-color); }
-        .type-wa .btn-copy:hover { background: #1ebc57; }
-        .btn-delete { position: absolute; top: 15px; right: 15px; background: none; border: none; color: #ccc; cursor: pointer; font-size: 1.2rem; }
-        .btn-delete:hover { color: red; }
-
-        /* UPLOAD SECTION */
-        #add-section, #setting-section { display: none; width: 100%; max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9rem; color: #444; }
-        .form-control, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; box-sizing: border-box; }
-        textarea.form-control { height: 150px; resize: vertical; font-family: inherit; }
-        .btn-save { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; }
-        .divider { border-top: 1px solid #eee; margin: 30px 0; }
-        .btn-danger { background-color: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; }
-        
-        .upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .upload-box { border: 2px dashed #ddd; padding: 20px; text-align: center; border-radius: 10px; cursor: pointer; background: #fafafa; transition: 0.3s; }
-        .upload-box:hover { border-color: var(--primary); background: #e3f2fd; }
-        .upload-icon { font-size: 2rem; display: block; margin-bottom: 10px; }
-        
-        /* Spinner Loader */
-        .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: none; margin: 10px auto; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        #toast { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 50px; padding: 16px; position: fixed; z-index: 1000; bottom: 30px; left: 50%; transform: translateX(-50%); font-weight: 500; }
-        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
-        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
-        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
-        @media (max-width: 768px) { .app-container { flex-direction: column; overflow: visible; } .sidebar { width: 100%; padding: 10px; flex-direction: row; overflow-x: auto; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid #ddd; } .logo { display: none; } .main-content { padding: 15px; } .upload-grid { grid-template-columns: 1fr; } }
-    </style>
-</head>
-<body>
-
-<div class="app-container">
-    <div class="sidebar">
-        <div class="logo">📘 REIWA KB</div>
-        <button class="nav-btn active" onclick="switchTab('tech')">🛠️ Knowledge Base</button>
-        <button class="nav-btn" onclick="switchTab('wa')">💬 Template WA</button>
-        <div style="flex:1"></div> 
-        <button class="nav-btn add-mode" onclick="switchTab('add')">➕ Import / Input</button>
-        <button class="nav-btn setting-mode" onclick="switchTab('setting')">⚙️ Pengaturan</button>
-    </div>
-
-    <div class="main-content">
-        <div id="view-area">
-            <div class="header-section">
-                <h2 id="page-title" class="page-title">Panduan Teknis</h2>
-                <div class="search-wrapper">
-                    <input type="text" id="search" placeholder="Ketik kata kunci..." autocomplete="off">
-                    <div id="result-count"></div>
-                </div>
-            </div>
-            <div id="results-grid"></div>
-        </div>
-
-        <div id="add-section">
-            <h2 style="color: var(--primary); text-align: center; margin-bottom: 20px;">Tambah Data Baru</h2>
-            
-            <div class="upload-grid">
-                <div class="upload-box" onclick="document.getElementById('csvFile').click()">
-                    <span class="upload-icon">📊</span>
-                    <strong>Import Excel (CSV)</strong>
-                    <div style="font-size:0.8em; color:#888;">Massal (Ratusan data)</div>
-                    <input type="file" id="csvFile" accept=".csv" style="display:none" onchange="handleCsvUpload(this)">
-                </div>
-
-                <div class="upload-box" onclick="document.getElementById('pdfFile').click()">
-                    <span class="upload-icon">📄</span>
-                    <strong>Baca File PDF</strong>
-                    <div style="font-size:0.8em; color:#888;">Ekstrak Teks Otomatis</div>
-                    <div class="loader" id="pdfLoader"></div>
-                    <input type="file" id="pdfFile" accept=".pdf" style="display:none" onchange="handlePdfUpload(this)">
-                </div>
-            </div>
-
-            <div class="divider"></div>
-
-            <h3 style="color:#444;">Edit / Input Manual</h3>
-            <form id="addForm" onsubmit="saveData(event)">
-                <div class="form-group">
-                    <label>Jenis:</label>
-                    <select id="new-type" class="form-control">
-                        <option value="tech">🛠️ Knowledge Base (Teknis)</option>
-                        <option value="wa">💬 Template WA</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>Judul / Pertanyaan:</label>
-                    <input type="text" id="new-title" class="form-control" placeholder="Contoh: Kode Error E1" required>
-                </div>
-                <div class="form-group">
-                    <label>Model Produk:</label>
-                    <input type="text" id="new-model" class="form-control" placeholder="Contoh: DB-3301C">
-                </div>
-                <div class="form-group">
-                    <label>Isi Konten (Hasil Ekstrak PDF akan muncul di sini):</label>
-                    <textarea id="new-content" class="form-control" placeholder="Tulis jawaban di sini..." required></textarea>
-                </div>
-                <button type="submit" class="btn-save">Simpan Data</button>
-            </form>
-        </div>
-
-        <div id="setting-section">
-            <h2>Pengaturan Data</h2>
-            <p>Total Data Tersimpan: <strong id="total-data">0</strong></p>
-            <div class="divider"></div>
-            <button class="btn-danger" onclick="clearAllData()">⚠️ Hapus SEMUA Data</button>
-        </div>
-    </div>
-</div>
-
-<div id="toast">Berhasil!</div>
-
 <script>
-    // Initial Data
+    // --- DATABASE ---
     const initialData = [
-        { type: 'tech', title: "Spesifikasi Daya (DB-3301C)", content: "Tegangan 220V/50Hz. Daya Pemanas 500W.", model: "DB-3301C", category: "Spesifikasi" },
-        { type: 'wa', title: "Sapaan Customer", content: "Halo Kak, ada yang bisa dibantu?", model: "Umum", category: "Sapaan" }
+        { type: 'tech', title: "Contoh Data (Reset)", content: "Data ini muncul karena database kosong.", model: "Test", category: "System" }
     ];
 
     let kbData = JSON.parse(localStorage.getItem('reiwa_kb_v3')) || initialData;
@@ -177,9 +17,82 @@
     const searchInput = document.getElementById('search');
     const grid = document.getElementById('results-grid');
 
-    // Setup PDF.js Worker
-    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';
+    // PDF Worker Setup
+    if (typeof pdfjsLib !== 'undefined') {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';
+    }
 
+    // --- CSV IMPORT YANG DIPERBAIKI (ANTI GAGAL) ---
+    function handleCsvUpload(input) {
+        const file = input.files[0];
+        if (!file) return;
+
+        // Gunakan FileReader untuk membaca teks dulu agar bisa deteksi separator
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const text = e.target.result;
+            
+            // Deteksi otomatis separator (; atau ,)
+            const firstLine = text.split('\n')[0];
+            const separator = firstLine.includes(';') ? ';' : ',';
+            
+            Papa.parse(text, {
+                header: true,
+                skipEmptyLines: true,
+                delimiter: separator, // Pakai separator yang dideteksi
+                transformHeader: function(h) {
+                    return h.trim().toLowerCase(); // Paksa header jadi huruf kecil & hapus spasi
+                },
+                complete: function(results) {
+                    const newData = results.data;
+                    let count = 0;
+                    
+                    if (newData.length === 0) {
+                        alert("File terbaca tapi kosong. Pastikan format Excel benar.");
+                        return;
+                    }
+
+                    // Debugging: Cek kolom pertama
+                    console.log("Kolom yang terbaca:", Object.keys(newData[0]));
+
+                    newData.forEach(row => {
+                        // Cek variasi nama kolom agar lebih fleksibel
+                        // Mengatasi masalah jika user nulis "Content" atau "Isi" atau "Jawaban"
+                        const type = row.type || row.jenis || 'tech';
+                        const title = row.title || row.judul || row.pertanyaan;
+                        const content = row.content || row.isi || row.jawaban || row.solusi;
+                        const model = row.model || 'General';
+                        const category = row.category || row.kategori || 'General';
+
+                        if (title && content) {
+                            kbData.push({
+                                type: type.toLowerCase().trim().includes('wa') ? 'wa' : 'tech', // Auto detect WA/Tech
+                                title: title,
+                                model: model,
+                                category: category,
+                                content: content
+                            });
+                            count++;
+                        }
+                    });
+
+                    if (count > 0) {
+                        saveToStorage();
+                        showToast(`Berhasil! ${count} data baru ditambahkan.`);
+                        switchTab('tech');
+                    } else {
+                        alert("Gagal import! Pastikan Excel punya kolom: 'Title' dan 'Content'.\n(Cek console log untuk detail).");
+                    }
+                },
+                error: function(err) {
+                    alert("Error Parsing: " + err.message);
+                }
+            });
+        };
+        reader.readAsText(file);
+    }
+
+    // --- NAVIGATION & RENDER ---
     function switchTab(tab) {
         currentTab = tab;
         document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -209,9 +122,9 @@
         const query = searchInput.value.toLowerCase();
         const filtered = kbData.filter(item => {
             return item.type === currentTab && (
-                item.title.toLowerCase().includes(query) || 
-                item.content.toLowerCase().includes(query) ||
-                item.model.toLowerCase().includes(query)
+                (item.title && item.title.toLowerCase().includes(query)) || 
+                (item.content && item.content.toLowerCase().includes(query)) ||
+                (item.model && item.model.toLowerCase().includes(query))
             );
         });
 
@@ -231,9 +144,7 @@
                 <button class="btn-delete" onclick="deleteItem(${originalIndex})" title="Hapus">&times;</button>
                 <div class="card-header">
                     <div class="card-title">${item.title}</div>
-                    <div>
-                        <span class="badge badge-model">${item.model}</span>
-                    </div>
+                    <div><span class="badge badge-model">${item.model}</span></div>
                 </div>
                 <div class="card-content">${item.content.replace(/\n/g, '<br>')}</div>
                 <button class="btn-copy" onclick="copyText(this)">📋 Salin</button>
@@ -242,66 +153,34 @@
         });
     }
 
-    // --- CSV IMPORT ---
-    function handleCsvUpload(input) {
-        const file = input.files[0];
-        if (!file) return;
-        Papa.parse(file, {
-            header: true, skipEmptyLines: true,
-            complete: function(results) {
-                let count = 0;
-                results.data.forEach(row => {
-                    if(row.type && row.title && row.content) {
-                        kbData.push({ type: row.type.toLowerCase().trim(), title: row.title, model: row.model || 'General', content: row.content });
-                        count++;
-                    }
-                });
-                saveToStorage();
-                showToast(`${count} Data diimport!`);
-                switchTab('tech');
-            }
-        });
-    }
-
-    // --- PDF IMPORT (SMART READER) ---
+    // --- PDF IMPORT ---
     async function handlePdfUpload(input) {
         const file = input.files[0];
         if (!file) return;
-
         const loader = document.getElementById('pdfLoader');
         loader.style.display = 'block';
-
         const fileReader = new FileReader();
         fileReader.onload = async function() {
             const typedarray = new Uint8Array(this.result);
             try {
                 const pdf = await pdfjsLib.getDocument(typedarray).promise;
                 let fullText = "";
-
-                // Loop semua halaman
                 for (let i = 1; i <= pdf.numPages; i++) {
                     const page = await pdf.getPage(i);
                     const textContent = await page.getTextContent();
-                    const pageText = textContent.items.map(item => item.str).join(' ');
-                    fullText += `--- Halaman ${i} ---\n${pageText}\n\n`;
+                    fullText += textContent.items.map(item => item.str).join(' ') + "\n\n";
                 }
-
-                // Masukkan teks ke form
-                document.getElementById('new-title').value = "Hasil Ekstrak PDF: " + file.name;
+                document.getElementById('new-title').value = "Hasil PDF: " + file.name;
                 document.getElementById('new-model').value = "PDF Import";
                 document.getElementById('new-content').value = fullText;
-                
-                showToast("PDF berhasil dibaca! Silakan edit & simpan.");
-                
-            } catch (error) {
-                alert("Gagal membaca PDF: " + error.message);
-            } finally {
-                loader.style.display = 'none';
-            }
+                showToast("PDF terbaca! Silakan edit.");
+            } catch (error) { alert("Gagal baca PDF: " + error.message); } 
+            finally { loader.style.display = 'none'; }
         };
         fileReader.readAsArrayBuffer(file);
     }
 
+    // --- CRUD FUNCTIONS ---
     function saveData(e) {
         e.preventDefault();
         const newItem = {
@@ -313,7 +192,7 @@
         kbData.push(newItem);
         saveToStorage();
         document.getElementById('addForm').reset();
-        showToast("Data Tersimpan!");
+        showToast("Tersimpan!");
         switchTab(newItem.type);
     }
 
@@ -332,6 +211,3 @@
     searchInput.addEventListener('input', renderData);
     switchTab('tech');
 </script>
-
-</body>
-</html>
