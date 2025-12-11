@@ -3,26 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>REIWA Knowledge Base</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
-    <style>
-        /* --- 1. DESAIN DASAR (CSS) --- */
-        :root {
-            --primary: #0056b3; /* Biru REIWA */<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>REIWA Internal System</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        /* --- CSS FIX: Pastikan semua style ada di dalam tag ini --- */
         :root {
-            --primary: #0056b3;
+            --primary: #0056b3; 
             --primary-dark: #004494;
             --wa-color: #25D366;
             --tech-color: #546e7a;
             --bg: #f4f6f8;
-            --card-bg: #fff;
             --text: #333;
             --border-radius: 10px;
         }
@@ -36,32 +26,37 @@
             display: flex;
             flex-direction: column;
             height: 100vh;
+            overflow: hidden; /* Mencegah scroll ganda */
         }
 
-        /* --- SIDEBAR MENU --- */
+        /* --- LAYOUT UTAMA --- */
         .app-container {
             display: flex;
             flex: 1;
+            height: 100%;
             overflow: hidden;
         }
 
+        /* --- SIDEBAR --- */
         .sidebar {
-            width: 250px;
+            width: 260px;
             background-color: white;
-            border-right: 1px solid #ddd;
+            border-right: 1px solid #e1e4e8;
             display: flex;
             flex-direction: column;
-            padding: 20px;
+            padding: 25px 20px;
+            flex-shrink: 0;
         }
 
         .logo {
-            font-size: 1.5rem;
+            font-size: 1.4rem;
             font-weight: 800;
             color: var(--primary);
-            margin-bottom: 30px;
+            margin-bottom: 40px;
             display: flex;
             align-items: center;
             gap: 10px;
+            letter-spacing: -0.5px;
         }
 
         .nav-btn {
@@ -70,24 +65,23 @@
             width: 100%;
             padding: 12px 15px;
             text-align: left;
-            font-size: 1rem;
-            font-weight: 500;
-            color: #555;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #666;
             cursor: pointer;
             border-radius: 8px;
             margin-bottom: 8px;
             transition: all 0.2s;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
         }
 
-        .nav-btn:hover { background-color: #eef2f7; color: var(--primary); }
+        .nav-btn:hover { background-color: #f8f9fa; color: var(--primary); }
         
         .nav-btn.active {
             background-color: #e3f2fd;
             color: var(--primary);
-            font-weight: 700;
         }
 
         .nav-btn.active.wa-mode { background-color: #e8f5e9; color: #1b5e20; }
@@ -96,106 +90,154 @@
         /* --- MAIN CONTENT --- */
         .main-content {
             flex: 1;
-            padding: 20px 40px;
+            padding: 30px 40px;
             overflow-y: auto;
             position: relative;
+            display: flex;
+            flex-direction: column;
         }
 
-        .search-box {
+        /* HEADER & SEARCH */
+        .header-section {
+            margin-bottom: 25px;
+        }
+
+        .page-title {
+            margin: 0 0 15px 0;
+            font-size: 1.8rem;
+            color: #2c3e50;
+        }
+
+        .search-wrapper {
             position: sticky;
             top: 0;
             background: var(--bg);
-            padding-bottom: 20px;
             z-index: 10;
+            padding-bottom: 10px;
         }
 
         input#search {
             width: 100%;
-            padding: 15px 20px;
+            padding: 16px 20px;
             font-size: 16px;
-            border: 2px solid #ddd;
-            border-radius: var(--border-radius);
+            border: 1px solid #ddd;
+            border-radius: 12px;
             outline: none;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            transition: all 0.3s;
             box-sizing: border-box;
         }
-        input#search:focus { border-color: var(--primary); }
+        input#search:focus {
+            border-color: var(--primary);
+            box-shadow: 0 4px 15px rgba(0, 86, 179, 0.1);
+        }
+
+        #result-count {
+            text-align: right;
+            font-size: 0.85rem;
+            color: #888;
+            margin-top: 8px;
+            font-weight: 500;
+        }
 
         /* --- CARD STYLES --- */
         .card {
             background: white;
-            padding: 20px;
-            border-radius: var(--border-radius);
-            margin-bottom: 15px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            padding: 24px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
             border-left: 5px solid #ccc;
-            transition: transform 0.2s;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
-        .card:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
+        .card:hover { transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.08); }
 
         /* Style Khusus Knowledge Base (Teknis) */
         .card.type-tech { border-left-color: var(--tech-color); }
         .card.type-tech .card-content { 
             font-family: 'Consolas', monospace; 
-            font-size: 0.9em; 
+            font-size: 0.95em; 
             background: #f8f9fa;
-            padding: 10px;
-            border-radius: 6px;
+            padding: 15px;
+            border-radius: 8px;
+            color: #444;
+            line-height: 1.6;
+            white-space: pre-wrap;
         }
 
         /* Style Khusus Template WA */
         .card.type-wa { border-left-color: var(--wa-color); }
         .card.type-wa .card-content {
             background: #e8f5e9;
-            padding: 15px;
+            padding: 20px;
             border-radius: 0 12px 12px 12px;
+            color: #1b5e20;
             font-style: italic;
             position: relative;
+            white-space: pre-wrap;
         }
         .card.type-wa .card-content::before {
-            content: "💬 Template WA";
+            content: "💬 Template Balasan";
             position: absolute;
-            top: -20px;
+            top: -22px;
             left: 0;
             font-size: 0.75rem;
-            color: #2e7d32;
-            font-weight: bold;
+            color: var(--wa-color);
+            font-weight: 700;
             font-style: normal;
         }
 
         .card-header {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 10px;
+            align-items: flex-start;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
-        .card-title { font-weight: 700; font-size: 1.1rem; color: #222; }
-        .badge { font-size: 0.75rem; padding: 3px 8px; border-radius: 4px; background: #eee; color: #555; }
+        .card-title { font-weight: 700; font-size: 1.15rem; color: #222; margin: 0; }
+        
+        .badge { 
+            font-size: 0.75rem; 
+            padding: 4px 10px; 
+            border-radius: 20px; 
+            background: #eee; 
+            color: #555; 
+            font-weight: 600;
+        }
+        .badge-model { background: #e3f2fd; color: #0d47a1; }
 
         .btn-copy {
-            margin-top: 10px;
-            padding: 8px 15px;
+            margin-top: 15px;
+            padding: 10px 18px;
             background: var(--primary);
             color: white;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             cursor: pointer;
             font-size: 0.9rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.2s;
         }
         .btn-copy:hover { background: var(--primary-dark); }
-        .type-wa .btn-copy { background: var(--wa-color); color: white; }
+        .type-wa .btn-copy { background: var(--wa-color); }
         .type-wa .btn-copy:hover { background: #1ebc57; }
 
         /* --- FORM TAMBAH DATA --- */
-        #add-section { display: none; max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
-        .form-group { margin-bottom: 15px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; font-size: 0.9rem; }
-        .form-control, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; font-size: 1rem; box-sizing: border-box; }
-        textarea.form-control { height: 120px; resize: vertical; }
-        .btn-save { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; font-size: 1rem; font-weight: 600; cursor: pointer; }
+        #add-section { display: none; width: 100%; max-width: 600px; margin: 0 auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: 600; font-size: 0.9rem; color: #444; }
+        .form-control, select { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 1rem; box-sizing: border-box; }
+        .form-control:focus { border-color: var(--primary); outline: none; }
+        textarea.form-control { height: 150px; resize: vertical; font-family: inherit; }
+        .btn-save { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; transition: background 0.2s; }
         .btn-save:hover { background: var(--primary-dark); }
 
-        /* Toast */
-        #toast { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 50px; padding: 16px; position: fixed; z-index: 999; bottom: 30px; left: 50%; transform: translateX(-50%); }
+        /* Toast Notification */
+        #toast { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 50px; padding: 16px; position: fixed; z-index: 1000; bottom: 30px; left: 50%; transform: translateX(-50%); font-weight: 500; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
         #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
         
         @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
@@ -203,11 +245,13 @@
 
         /* Mobile Responsive */
         @media (max-width: 768px) {
-            .app-container { flex-direction: column; }
-            .sidebar { width: 100%; padding: 10px; flex-direction: row; overflow-x: auto; box-sizing: border-box;}
+            .app-container { flex-direction: column; height: auto; overflow: visible; }
+            .sidebar { width: 100%; padding: 15px; flex-direction: row; overflow-x: auto; box-sizing: border-box; border-right: none; border-bottom: 1px solid #ddd; position: sticky; top: 0; z-index: 100; gap: 10px; }
             .logo { display: none; }
-            .nav-btn { font-size: 0.85rem; padding: 8px; white-space: nowrap;}
-            .main-content { padding: 15px; }
+            .nav-btn { font-size: 0.85rem; padding: 10px 15px; white-space: nowrap; margin-bottom: 0; justify-content: center; }
+            .main-content { padding: 20px; overflow: visible; }
+            .search-wrapper { position: static; }
+            body { height: auto; }
         }
     </style>
 </head>
@@ -218,26 +262,31 @@
         <div class="logo">📘 REIWA KB</div>
         <button class="nav-btn active" onclick="switchTab('tech')">🛠️ Knowledge Base</button>
         <button class="nav-btn" onclick="switchTab('wa')">💬 Template WA</button>
-        <div style="flex:1"></div> <button class="nav-btn" onclick="switchTab('add')">➕ Tambah Data</button>
+        <div style="flex:1" class="desktop-spacer"></div> 
+        <button class="nav-btn add-mode" onclick="switchTab('add')">➕ Tambah Data</button>
     </div>
 
     <div class="main-content">
         
-        <div id="search-area" class="search-box">
-            <h2 id="page-title" style="margin-top:0; margin-bottom: 10px;">Panduan Teknis</h2>
-            <input type="text" id="search" placeholder="Cari..." autocomplete="off">
-            <div id="result-count" style="text-align: right; font-size: 0.8rem; color: #888; margin-top: 5px;"></div>
+        <div id="view-area">
+            <div class="header-section">
+                <h2 id="page-title" class="page-title">Panduan Teknis</h2>
+                <div class="search-wrapper">
+                    <input type="text" id="search" placeholder="Ketik kata kunci..." autocomplete="off">
+                    <div id="result-count"></div>
+                </div>
+            </div>
+            
+            <div id="results-grid"></div>
         </div>
 
-        <div id="results-grid"></div>
-
         <div id="add-section">
-            <h2 style="margin-top:0; color: var(--primary);">Tambah Knowledge Base Baru</h2>
-            <p style="font-size:0.9rem; color:#666; margin-bottom:20px;">Data akan tersimpan di browser ini (Local Storage).</p>
+            <h2 style="margin-top:0; color: var(--primary); text-align: center; margin-bottom: 10px;">Tambah Data Baru</h2>
+            <p style="text-align:center; color:#666; margin-bottom:30px; font-size: 0.9rem;">Data akan tersimpan otomatis di browser ini (Local Storage).</p>
             
             <form id="addForm" onsubmit="saveData(event)">
                 <div class="form-group">
-                    <label>Jenis Data:</label>
+                    <label>Kategori Data:</label>
                     <select id="new-type" class="form-control">
                         <option value="tech">🛠️ Knowledge Base (Teknis)</option>
                         <option value="wa">💬 Template WA (Customer Service)</option>
@@ -249,7 +298,7 @@
                 </div>
                 <div class="form-group">
                     <label>Model Produk:</label>
-                    <input type="text" id="new-model" class="form-control" placeholder="Contoh: DB-3301C, ALL Series" required>
+                    <input type="text" id="new-model" class="form-control" placeholder="Contoh: DB-3301C" required>
                 </div>
                 <div class="form-group">
                     <label>Konten / Jawaban:</label>
@@ -265,60 +314,45 @@
 <div id="toast">Berhasil disalin!</div>
 
 <script>
-    // --- DATABASE ---
-    // Gabungan data Teknis (Analisis terakhir) dan Template WA (Analisis sebelumnya)
-    // Tipe: 'tech' (Technical/KB) atau 'wa' (Whatsapp Template)
+    // --- DATABASE AWAL (CONTOH) ---
     const initialData = [
-        // --- DATA TEKNIS (KNOWLEDGE BASE) ---
         { type: 'tech', title: "Spesifikasi Daya (DB-3301C)", content: "Tegangan 220V/50Hz. Daya Pemanas 500W. Daya Total 580W. Kompresor 0.74A.", model: "DB-3301C" },
-        { type: 'tech', title: "Fitur Sterilisasi UV-C", content: "Indikator UV berkedip 30 menit saat tangki penuh untuk sterilisasi. Lampu diam = standby.", model: "DB-3301C, DB-3104C" },
-        { type: 'tech', title: "Prosedur Penggantian Galon", content: "1. Buka pintu. 2. Tarik baki. 3. Lepas tutup galon. 4. Pasang adaptor hingga klik. 5. Masukkan galon.", model: "ALL DB Series" },
-        { type: 'tech', title: "Troubleshooting: Alarm Bunyi", content: "Sensor mendeteksi galon habis. Ganti galon. Jika masih bunyi, buka-tutup pintu untuk reset sensor.", model: "ALL DB Series" },
-        { type: 'tech', title: "Instalasi Jarak Dinding", content: "Wajib beri jarak minimal 20cm dari dinding belakang untuk sirkulasi kondensor.", model: "ALL DB Series" },
-
-        // --- DATA TEMPLATE WA (CUSTOMER SERVICE) ---
-        { type: 'wa', title: "Sapaan & Info DB-3301C", content: "Halo Kak! Tipe **DB-3301C** adalah dispenser pintar flagship kami.\n✨ Fitur:\n- Layar Digital\n- Mode Jadwal (Hemat Listrik)\n- UV-C Sterilization\n- Dingin Kompresor (sejuk seperti kulkas).", model: "DB-3301C" },
-        { type: 'wa', title: "Keluhan Air Tidak Dingin (Baru)", content: "Mohon maaf Kak. Untuk unit baru, pastikan:\n1. Sakelar HIJAU di belakang sudah ON.\n2. Unit butuh waktu ±1 jam untuk dingin maksimal.\n3. Jarak belakang dispenser ke tembok minimal 20cm.\nBoleh dicoba dulu ya Kak? 😊", model: "ALL DB Series" },
-        { type: 'wa', title: "Keluhan Alarm Bunyi Terus", content: "Jika galon sudah diganti tapi masih bunyi, kemungkinan sensor perlu reset Kak.\n\nCaranya:\n1. Buka pintu bawah.\n2. Dorong galon masuk sedikit lagi.\n3. Tutup pintu dengan rapat.\n4. Jika perlu, cabut colokan listrik 1 menit lalu pasang lagi.", model: "ALL DB Series" },
+        { type: 'tech', title: "Fitur Sterilisasi UV-C", content: "Indikator UV berkedip 30 menit saat tangki penuh untuk sterilisasi. Lampu diam = standby.", model: "DB-3301C" },
+        { type: 'wa', title: "Sapaan & Info DB-3301C", content: "Halo Kak! Tipe **DB-3301C** adalah dispenser pintar flagship kami.\n✨ Fitur:\n- Layar Digital\n- Mode Jadwal (Hemat Listrik)\n- UV-C Sterilization\n- Dingin Kompresor.", model: "DB-3301C" },
+        { type: 'wa', title: "Keluhan Air Tidak Dingin", content: "Mohon maaf Kak. Untuk unit baru, pastikan:\n1. Sakelar HIJAU di belakang sudah ON.\n2. Unit butuh waktu ±1 jam untuk dingin maksimal.\n3. Jarak belakang dispenser ke tembok minimal 20cm.", model: "ALL DB Series" }
     ];
 
-    // Load Data from LocalStorage if available
+    // Load Data
     let kbData = JSON.parse(localStorage.getItem('reiwa_kb_data')) || initialData;
-
-    // State
-    let currentTab = 'tech'; // 'tech', 'wa', 'add'
+    let currentTab = 'tech'; 
 
     // DOM Elements
     const searchInput = document.getElementById('search');
     const resultsContainer = document.getElementById('results-grid');
-    const searchArea = document.getElementById('search-area');
+    const viewArea = document.getElementById('view-area');
     const addSection = document.getElementById('add-section');
     const pageTitle = document.getElementById('page-title');
     const countLabel = document.getElementById('result-count');
     const navBtns = document.querySelectorAll('.nav-btn');
 
-    // --- FUNGSI UTAMA ---
-
+    // --- FUNGSI NAVIGASI ---
     function switchTab(tab) {
         currentTab = tab;
         
-        // Update Nav UI
+        // Update UI Tombol
         navBtns.forEach(btn => btn.classList.remove('active'));
         if(tab === 'tech') navBtns[0].classList.add('active');
         if(tab === 'wa') navBtns[1].classList.add('active');
         if(tab === 'add') navBtns[2].classList.add('active');
 
-        // Show/Hide Sections
+        // Tampilkan/Sembunyikan Area
         if (tab === 'add') {
-            searchArea.style.display = 'none';
-            resultsContainer.style.display = 'none';
+            viewArea.style.display = 'none';
             addSection.style.display = 'block';
         } else {
-            searchArea.style.display = 'block';
-            resultsContainer.style.display = 'block';
+            viewArea.style.display = 'block';
             addSection.style.display = 'none';
             
-            // Set Title & Placeholder
             if (tab === 'tech') {
                 pageTitle.innerText = "🛠️ Knowledge Base (Panduan Teknis)";
                 pageTitle.style.color = "var(--tech-color)";
@@ -328,15 +362,14 @@
                 pageTitle.style.color = "var(--wa-color)";
                 searchInput.placeholder = "Cari skrip balasan untuk pelanggan...";
             }
-            
             renderData();
         }
     }
 
+    // --- FUNGSI RENDER DATA ---
     function renderData() {
         const query = searchInput.value.toLowerCase();
         
-        // Filter Data berdasarkan Tab Aktif & Search Query
         const filtered = kbData.filter(item => {
             return item.type === currentTab && (
                 item.title.toLowerCase().includes(query) || 
@@ -349,7 +382,11 @@
         resultsContainer.innerHTML = '';
 
         if (filtered.length === 0) {
-            resultsContainer.innerHTML = '<div style="text-align:center; padding:40px; color:#999;">Tidak ada data ditemukan.</div>';
+            resultsContainer.innerHTML = `
+                <div style="text-align:center; padding:50px; color:#999;">
+                    <p style="font-size:3rem; margin:0;">📭</p>
+                    <p>Tidak ada data ditemukan.</p>
+                </div>`;
             return;
         }
 
@@ -357,23 +394,24 @@
             const card = document.createElement('div');
             card.className = `card type-${item.type}`;
             
-            // Convert newline \n to <br> for display
-            const displayContent = item.content.replace(/\n/g, '<br>');
+            // Konversi Enter (\n) menjadi <br>
+            const displayContent = item.content;
 
             card.innerHTML = `
                 <div class="card-header">
                     <div class="card-title">${item.title}</div>
-                    <span class="badge">${item.model}</span>
+                    <span class="badge badge-model">${item.model}</span>
                 </div>
                 <div class="card-content">${displayContent}</div>
-                <button class="btn-copy" onclick="copyToClipboard(this)">📋 Salin</button>
+                <button class="btn-copy" onclick="copyToClipboard(this)">
+                    📋 Salin Teks
+                </button>
             `;
             resultsContainer.appendChild(card);
         });
     }
 
-    // --- FITUR SIMPAN & COPY ---
-
+    // --- FUNGSI TAMBAH DATA ---
     function saveData(e) {
         e.preventDefault();
         
@@ -382,31 +420,21 @@
         const newModel = document.getElementById('new-model').value;
         const newContent = document.getElementById('new-content').value;
 
-        // Add to Array
-        kbData.push({
-            type: newType,
-            title: newTitle,
-            model: newModel,
-            content: newContent
-        });
-
-        // Save to Browser Storage
+        kbData.push({ type: newType, title: newTitle, model: newModel, content: newContent });
         localStorage.setItem('reiwa_kb_data', JSON.stringify(kbData));
 
-        // Reset Form & Notification
         document.getElementById('addForm').reset();
-        showToast("Data berhasil disimpan!");
-        
-        // Switch back to the relevant tab
+        showToast("✅ Data Berhasil Disimpan!");
         switchTab(newType);
     }
 
+    // --- FUNGSI COPY ---
     function copyToClipboard(btn) {
         const contentDiv = btn.previousElementSibling;
-        const text = contentDiv.innerText; // Get raw text
+        const text = contentDiv.innerText;
         
         navigator.clipboard.writeText(text).then(() => {
-            showToast("Teks berhasil disalin!");
+            showToast("✅ Teks berhasil disalin!");
         });
     }
 
@@ -414,12 +442,12 @@
         const x = document.getElementById("toast");
         x.innerText = msg;
         x.className = "show";
-        setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+        setTimeout(() => { x.className = x.className.replace("show", ""); }, 3000);
     }
 
-    // Event Listener Search
+    // Listener
     searchInput.addEventListener('input', renderData);
-
+    
     // Init
     switchTab('tech');
 
@@ -427,426 +455,3 @@
 
 </body>
 </html>
-            --primary-dark: #004494;
-            --bg-color: #f0f2f5;
-            --card-bg: #ffffff;
-            --text-main: #333;
-            --text-muted: #666;
-            --border-radius: 12px;
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-main);
-            margin: 0;
-            padding: 0;
-            line-height: 1.6;
-        }
-
-        .container {
-            max-width: 900px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        /* --- 2. HEADER --- */
-        header {
-            text-align: center;
-            margin-bottom: 30px;
-            padding-top: 20px;
-        }
-        header h1 {
-            color: var(--primary);
-            margin: 0;
-            font-size: 2rem;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-        }
-        header p {
-            color: var(--text-muted);
-            margin-top: 8px;
-            font-size: 1.1rem;
-        }
-
-        /* --- 3. KOLOM PENCARIAN (STICKY) --- */
-        .search-container {
-            position: sticky;
-            top: 20px;
-            z-index: 100;
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(10px);
-            padding: 15px;
-            border-radius: var(--border-radius);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-            margin-bottom: 25px;
-            border: 1px solid rgba(0,0,0,0.05);
-        }
-
-        input#search {
-            width: 100%;
-            padding: 16px 20px;
-            font-size: 16px;
-            border: 2px solid #e1e4e8;
-            border-radius: 8px;
-            outline: none;
-            transition: all 0.3s ease;
-            box-sizing: border-box; /* Agar padding tidak merusak lebar */
-        }
-
-        input#search:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 4px rgba(0, 86, 179, 0.1);
-        }
-
-        .results-count {
-            text-align: right;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-top: 8px;
-            margin-right: 5px;
-        }
-
-        /* --- 4. KARTU JAWABAN (CARD) --- */
-        .card {
-            background: var(--card-bg);
-            border-radius: var(--border-radius);
-            padding: 24px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-            border-left: 5px solid var(--primary);
-            transition: transform 0.2s, box-shadow 0.2s;
-            position: relative;
-        }
-
-        .card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 12px 24px rgba(0,0,0,0.08);
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            flex-wrap: wrap;
-            gap: 10px;
-            margin-bottom: 15px;
-            border-bottom: 1px solid #eee;
-            padding-bottom: 10px;
-        }
-
-        .card-title {
-            font-weight: 700;
-            font-size: 1.15rem;
-            color: #2c3e50;
-            flex: 1;
-        }
-
-        /* Badge / Label */
-        .badge-group {
-            display: flex;
-            gap: 6px;
-            flex-wrap: wrap;
-        }
-        .badge {
-            font-size: 0.75rem;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-        .badge-model { background-color: #e3f2fd; color: #0d47a1; }
-        .badge-category { background-color: #e8f5e9; color: #1b5e20; }
-
-        /* Isi Konten */
-        .card-content {
-            background-color: #f8f9fa;
-            padding: 15px;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            color: #444;
-            white-space: pre-wrap; /* Agar enter/baris baru terbaca */
-            font-family: 'Consolas', 'Monaco', monospace; /* Font teknis */
-            line-height: 1.7;
-            border: 1px solid #eaecf0;
-        }
-
-        /* Tombol Copy */
-        .btn-copy {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 10px 18px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            font-weight: 600;
-            margin-top: 15px;
-            display: inline-flex;
-            align-items: center;
-            transition: background 0.2s;
-        }
-        .btn-copy:hover { background-color: var(--primary-dark); }
-        .btn-copy:active { transform: scale(0.98); }
-        .btn-copy svg { margin-right: 8px; width: 16px; height: 16px; fill: white; }
-
-        /* Notifikasi Toast */
-        #toast {
-            visibility: hidden;
-            min-width: 250px;
-            background-color: #333;
-            color: #fff;
-            text-align: center;
-            border-radius: 50px;
-            padding: 16px;
-            position: fixed;
-            z-index: 999;
-            bottom: 30px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 16px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        }
-        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
-
-        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
-        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
-
-        /* Responsif untuk HP */
-        @media (max-width: 600px) {
-            .card-header { flex-direction: column; }
-            .badge-group { margin-top: 5px; }
-            input#search { padding: 12px 15px; font-size: 15px; }
-        }
-    </style>
-</head>
-<body>
-
-    <div class="container">
-        <header>
-            <h1>REIWA Knowledge Base</h1>
-            <p>Pusat Panduan Teknis & Template Balasan WA</p>
-        </header>
-
-        <div class="search-container">
-            <input type="text" id="search" placeholder="🔍 Ketik kendala, tipe, atau error (Cth: E1, Tidak Dingin, DB-3301)..." autofocus>
-            <div class="results-count" id="count">Memuat data...</div>
-        </div>
-
-        <div id="results">
-            </div>
-    </div>
-
-    <div id="toast">✅ Teks berhasil disalin!</div>
-
-    <script>
-        // --- 5. DATABASE (DATA ANDA) ---
-        const kbData = [
-            {
-                title: "Spesifikasi Daya & Tegangan (DB-3301C)",
-                content: "Tegangan 220V/50Hz. Daya Pemanas 500 Watt. Daya Total 580 Watt. Arus Pendingin 0.74 A. Menggunakan sistem Kompresor.",
-                category: "Spesifikasi/Kelistrikan",
-                model: "DB-3301C",
-                tags: "technical, power"
-            },
-            {
-                title: "Spesifikasi Suhu & Kapasitas (DB-3301C)",
-                content: "Suhu Panas mencapai 94°C. Suhu Dingin mencapai 6°C. Kapasitas Tangki Panas 0.8 Liter, Tangki Dingin 2.8 Liter.",
-                category: "Spesifikasi/Kinerja",
-                model: "DB-3301C",
-                tags: "technical, temperature, capacity"
-            },
-            {
-                title: "Fitur: Sterilisasi UV-C (DB-3301C/3104C)",
-                content: "Indikator UV-C akan berkedip otomatis selama 30 menit setiap kali tangki air terisi penuh. Ini menandakan proses sterilisasi bakteri sedang berjalan. Setelah selesai, lampu akan menyala diam (standby).",
-                category: "Pengoperasian/Fitur",
-                model: "DB-3301C, DB-3104C",
-                tags: "feature, sterilization"
-            },
-            {
-                title: "Pengaturan Mode Penjadwalan (DB-3301C)",
-                content: "Unit memiliki 3 mode:\n1. Custom (24 jam aktif).\n2. Home (Aktif jam 06-08, 11-14, 17-22).\n3. Office (Aktif jam 07:30-20:00).\nTekan tombol [SET] lalu [UP/DOWN] untuk memilih mode.",
-                category: "Pengoperasian/Mode",
-                model: "DB-3301C",
-                tags: "operation, scheduling"
-            },
-            {
-                title: "Prosedur Penggantian Galon",
-                content: "1. Tarik baki galon keluar.\n2. Lepaskan tutup galon baru.\n3. Masukkan pipa adaptor ke dalam galon dan tekan hingga bunyi 'klik'.\n4. Masukkan galon ke kabinet dan tutup pintu rapat-rapat.",
-                category: "Pengoperasian/Galon",
-                model: "ALL DB Series",
-                tags: "operation, refill"
-            },
-            {
-                title: "Troubleshooting: Alarm Berbunyi",
-                content: "Penyebab: Sensor mendeteksi air galon habis.\nSolusi: Ganti galon dengan yang baru. Jika alarm tetap berbunyi, buka-tutup pintu kabinet untuk mereset sensor, atau cabut steker sebentar.",
-                category: "Troubleshooting/Alarm",
-                model: "ALL DB Series",
-                tags: "warning, error"
-            },
-            {
-                title: "Troubleshooting: Air Tidak Panas",
-                content: "1. Cek sakelar pemanas (MERAH) di belakang unit (harus ON).\n2. Cek indikator pemanas di depan (jika berkedip berarti sedang memanas, tunggu hingga stabil).\n3. Jika terlalu banyak air panas diambil, tunggu 15-20 menit untuk pemanasan ulang.",
-                category: "Troubleshooting/Suhu",
-                model: "ALL DB Series",
-                tags: "repair, heating"
-            },
-            {
-                title: "Troubleshooting: Air Tidak Dingin",
-                content: "1. Cek sakelar pendingin (HIJAU) di belakang unit (harus ON).\n2. Cek indikator pendingin (jika berkedip berarti kompresor sedang bekerja).\n3. Pastikan jarak belakang unit minimal 20cm untuk sirkulasi udara.",
-                category: "Troubleshooting/Suhu",
-                model: "ALL DB Series",
-                tags: "repair, cooling"
-            },
-            {
-                title: "Troubleshooting: Kode Error E1/E2/E3 (Digital)",
-                content: "Indikasi kesalahan sistem pada model digital.\nSolusi: Matikan tombol daya (Power), tunggu ±5 menit, kemudian hidupkan kembali untuk mereset sistem. Jika berlanjut, hubungi teknisi.",
-                category: "Troubleshooting/Error",
-                model: "DB-3301C",
-                tags: "error, digital"
-            },
-            {
-                title: "Prosedur Pengurasan Tangki (Kuras)",
-                content: "Wajib dilakukan jika unit tidak dipakai lama atau saat pemindahan.\n1. Matikan sakelar & cabut steker.\n2. Siapkan wadah di belakang unit.\n3. Buka tutup pembuangan (drain cap).\n4. Biarkan air panas dan dingin keluar hingga habis.",
-                category: "Perawatan/Kuras",
-                model: "ALL DB Series",
-                tags: "maintenance, drain"
-            },
-            {
-                title: "Instalasi: Pemasangan Kaki Penahan (Opsional)",
-                content: "Jika unit diletakkan pada permukaan miring (maks 15-25 derajat), pasang Kaki Penahan di bagian belakang bawah menggunakan sekrup dan fisher ke lantai untuk mencegah unit roboh.",
-                category: "Instalasi/Keamanan",
-                model: "DB-3104C, DB-2304C, DB-3301C",
-                tags: "installation, safety"
-            },
-            {
-                title: "Instalasi Awal (Penting)",
-                content: "Setelah unit dipasang dan galon masuk:\n1. Tunggu pengisian tangki ±5 menit.\n2. Pastikan air keluar dari kran panas/dingin SEBELUM menyalakan sakelar di belakang untuk mencegah kerusakan elemen pemanas (dry heating).",
-                category: "Instalasi/Awal",
-                model: "ALL DB Series",
-                tags: "installation, safety"
-            },
-            {
-                title: "Fitur: Child Lock Keran Panas (Model Tombol)",
-                content: "Pada model DB-2301/2304/3301, tombol air panas memiliki geseran merah. Geser tombol merah ke samping sebelum menekan tombol ke bawah.",
-                category: "Pengoperasian/Safety",
-                model: "DB-2301, DB-2304C, DB-3301C",
-                tags: "safety, operation"
-            },
-            {
-                title: "Fitur: Child Lock (Panel Sentuh DB-3104C)",
-                content: "Ketuk tombol 'Safety Lock' (Gembok) terlebih dahulu untuk membuka kunci, kemudian sentuh dan tahan tombol 'HOT' untuk mengeluarkan air panas. Tombol akan mengunci otomatis setelah 2 detik.",
-                category: "Pengoperasian/Safety",
-                model: "DB-3104C",
-                tags: "operation, safety"
-            },
-            {
-                title: "Instalasi: Jarak Penempatan",
-                content: "Unit harus ditempatkan di area rata dan kering. Wajib memberi jarak minimal 20 cm dari dinding belakang untuk sirkulasi udara kondensor/pembuangan panas.",
-                category: "Instalasi/Posisi",
-                model: "ALL DB Series",
-                tags: "installation, ventilation"
-            },
-            {
-                title: "Fitur: Pengatur Ketinggian Keran (DB-3104C)",
-                content: "Saluran keluar air (nozzle) dapat dinaik-turunkan. Tarik nozzle ke bawah untuk botol tinggi, dorong ke atas untuk gelas pendek.",
-                category: "Pengoperasian/Fitur",
-                model: "DB-3104C",
-                tags: "feature, adjustable"
-            },
-            {
-                title: "Mengatur Lebar Tatakan (Baki Tetes)",
-                content: "Tatakan pada baki tetes dapat dilebarkan ke depan untuk menahan wadah (panci/mangkok) hingga diameter 16 cm.",
-                category: "Pengoperasian/Fitur",
-                model: "DB-3301C, DB-3104C",
-                tags: "feature, tray"
-            },
-            {
-                title: "Troubleshooting: Air Keran Normal Menjadi Dingin/Panas",
-                content: "Ini normal jika keran normal jarang digunakan. Suhu dari tangki dingin/panas merambat ke saluran normal. Buang 1 gelas air dari keran normal untuk mendapatkan suhu biasa kembali.",
-                category: "Troubleshooting/Suhu",
-                model: "ALL DB Series",
-                tags: "troubleshooting, temperature"
-            }
-        ];
-
-        // --- 6. LOGIKA PENCARIAN & RENDER ---
-        const searchInput = document.getElementById('search');
-        const resultsContainer = document.getElementById('results');
-        const countLabel = document.getElementById('count');
-
-        function renderCards(data) {
-            resultsContainer.innerHTML = '';
-            countLabel.innerText = `Menampilkan ${data.length} hasil`;
-
-            if (data.length === 0) {
-                resultsContainer.innerHTML = `
-                    <div style="text-align:center; padding:40px; color:#888;">
-                        <p style="font-size:3rem; margin-bottom:10px;">🤔</p>
-                        <p>Tidak ditemukan hasil. Coba kata kunci lain.</p>
-                    </div>`;
-                return;
-            }
-
-            data.forEach(item => {
-                const card = document.createElement('div');
-                card.className = 'card';
-                
-                // SVG Icon untuk tombol Copy
-                const copyIcon = `<svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>`;
-
-                card.innerHTML = `
-                    <div class="card-header">
-                        <div class="card-title">${item.title}</div>
-                        <div class="badge-group">
-                            <span class="badge badge-model">${item.model}</span>
-                            <span class="badge badge-category">${item.category}</span>
-                        </div>
-                    </div>
-                    <div class="card-content">${item.content}</div>
-                    <button class="btn-copy" onclick="copyToClipboard(this)">
-                        ${copyIcon} Salin Jawaban
-                    </button>
-                `;
-                resultsContainer.appendChild(card);
-            });
-        }
-
-        searchInput.addEventListener('input', (e) => {
-            const query = e.target.value.toLowerCase();
-            const filteredData = kbData.filter(item => {
-                return (
-                    item.title.toLowerCase().includes(query) || 
-                    item.content.toLowerCase().includes(query) ||
-                    item.model.toLowerCase().includes(query) ||
-                    item.tags.toLowerCase().includes(query)
-                );
-            });
-            renderCards(filteredData);
-        });
-
-        function copyToClipboard(btn) {
-            const contentDiv = btn.previousElementSibling;
-            const textToCopy = contentDiv.innerText;
-            
-            navigator.clipboard.writeText(textToCopy).then(() => {
-                showToast();
-            }).catch(err => {
-                alert('Gagal menyalin: ' + err);
-            });
-        }
-
-        function showToast() {
-            const x = document.getElementById("toast");
-            x.className = "show";
-            setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
-        }
-
-        // Tampilkan semua data saat pertama kali buka
-        renderCards(kbData);
-
-    </script>
-</body>
-</html>
-
