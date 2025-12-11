@@ -1,0 +1,134 @@
+:root {
+    --primary: #0056b3; /* Warna Biru REIWA */
+    --secondary: #eef2f7;
+    --text: #333;
+    --success: #28a745;
+}
+
+body {
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: #f0f2f5;
+    color: var(--text);
+    margin: 0;
+    padding: 20px;
+}
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.header h1 { color: var(--primary); margin: 0; font-size: 2rem; }
+.header p { color: #666; margin-top: 5px; }
+
+/* Search Box Sticky */
+.search-wrapper {
+    position: sticky;
+    top: 20px;
+    z-index: 100;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    backdrop-filter: blur(5px);
+}
+
+input#search {
+    width: 100%;
+    padding: 15px;
+    font-size: 16px;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    outline: none;
+    transition: all 0.3s;
+}
+
+input#search:focus { border-color: var(--primary); box-shadow: 0 0 8px rgba(0, 86, 179, 0.2); }
+
+#count { text-align: right; font-size: 0.85em; color: #888; margin-top: 8px; }
+
+/* Cards */
+.results-grid { margin-top: 20px; }
+
+.card {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 15px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    border-left: 5px solid var(--primary);
+    transition: transform 0.2s;
+}
+
+.card:hover { transform: translateY(-3px); box-shadow: 0 8px 15px rgba(0,0,0,0.1); }
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+}
+
+.card-title { font-weight: 700; font-size: 1.1em; color: #2c3e50; }
+
+.badges { display: flex; gap: 5px; flex-wrap: wrap; }
+.badge {
+    font-size: 0.75em;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-weight: 600;
+}
+.badge-model { background: #e3f2fd; color: #0056b3; }
+.badge-cat { background: #e8f5e9; color: #2e7d32; }
+
+.content-box {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 6px;
+    font-size: 0.95em;
+    line-height: 1.6;
+    border: 1px solid #eee;
+    white-space: pre-line; /* Agar enter terbaca */
+}
+
+.btn-copy {
+    background-color: var(--primary);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9em;
+    margin-top: 15px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.3s;
+}
+.btn-copy:hover { background-color: #004494; }
+
+/* Toast Notification */
+#toast {
+    visibility: hidden;
+    min-width: 250px;
+    background-color: #333;
+    color: #fff;
+    text-align: center;
+    border-radius: 4px;
+    padding: 16px;
+    position: fixed;
+    z-index: 1000;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 17px;
+}
+#toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+
+@keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+@keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
