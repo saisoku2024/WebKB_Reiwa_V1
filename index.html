@@ -1,213 +1,406 @@
-<script>
-    // --- DATABASE ---
-    const initialData = [
-        { type: 'tech', title: "Contoh Data (Reset)", content: "Data ini muncul karena database kosong.", model: "Test", category: "System" }
-    ];
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>REIWA Knowledge Base</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <style>
+        /* --- 1. RESET & BASIC STYLE --- */
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f6f8;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: row;
+            height: 100vh;
+            overflow: hidden;
+        }
 
-    let kbData = JSON.parse(localStorage.getItem('reiwa_kb_v3')) || initialData;
-    let currentTab = 'tech';
+        /* --- 2. SIDEBAR (KIRI) --- */
+        .sidebar {
+            width: 250px;
+            background: white;
+            border-right: 1px solid #ddd;
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            flex-shrink: 0;
+        }
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            color: #0056b3;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .nav-btn {
+            background: none;
+            border: none;
+            width: 100%;
+            padding: 12px;
+            text-align: left;
+            font-size: 15px;
+            color: #555;
+            cursor: pointer;
+            border-radius: 8px;
+            margin-bottom: 5px;
+            transition: 0.2s;
+        }
+        .nav-btn:hover { background-color: #f0f0f0; }
+        .nav-btn.active { background-color: #e3f2fd; color: #0056b3; font-weight: bold; }
+        .nav-btn.btn-wa.active { background-color: #e8f5e9; color: #1b5e20; }
+        .nav-btn.btn-add.active { background-color: #fff3e0; color: #e65100; }
 
-    // Elements
-    const views = {
-        view: document.getElementById('view-area'),
-        add: document.getElementById('add-section'),
-        setting: document.getElementById('setting-section')
-    };
-    const titleEl = document.getElementById('page-title');
-    const searchInput = document.getElementById('search');
-    const grid = document.getElementById('results-grid');
+        /* --- 3. MAIN CONTENT (KANAN) --- */
+        .main-content {
+            flex: 1;
+            padding: 30px;
+            overflow-y: auto;
+            position: relative;
+        }
 
-    // PDF Worker Setup
-    if (typeof pdfjsLib !== 'undefined') {
-        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';
-    }
+        /* Search Box */
+        .search-box {
+            position: sticky;
+            top: 0;
+            background: #f4f6f8;
+            padding-bottom: 15px;
+            z-index: 10;
+        }
+        input#search {
+            width: 100%;
+            padding: 15px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            outline: none;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        input#search:focus { border-color: #0056b3; }
 
-    // --- CSV IMPORT YANG DIPERBAIKI (ANTI GAGAL) ---
-    function handleCsvUpload(input) {
-        const file = input.files[0];
-        if (!file) return;
+        /* Cards */
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border-left: 5px solid #ccc;
+            position: relative;
+        }
+        .card.tech { border-left-color: #0056b3; }
+        .card.wa { border-left-color: #25D366; }
 
-        // Gunakan FileReader untuk membaca teks dulu agar bisa deteksi separator
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            const text = e.target.result;
+        .card-header { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .card-title { font-weight: 700; font-size: 1.1em; }
+        
+        .badge { font-size: 12px; padding: 3px 8px; background: #eee; border-radius: 4px; color: #666; }
+        
+        .card-content { 
+            white-space: pre-wrap; /* Agar enter terbaca */
+            font-size: 14px; 
+            line-height: 1.6;
+            background: #fafafa;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #eee;
+        }
+        .card.wa .card-content { background: #f1f8e9; color: #1b5e20; font-style: italic; }
+
+        .btn-copy {
+            margin-top: 10px;
+            padding: 8px 15px;
+            background: #0056b3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .card.wa .btn-copy { background: #25D366; }
+        
+        .btn-delete {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: none;
+            border: none;
+            color: #999;
+            cursor: pointer;
+            font-size: 18px;
+        }
+        .btn-delete:hover { color: red; }
+
+        /* Form Input */
+        #input-area, #setting-area { display: none; background: white; padding: 30px; border-radius: 10px; max-width: 600px; margin: 0 auto; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; }
+        textarea { height: 100px; resize: vertical; }
+        .btn-save { width: 100%; padding: 12px; background: #0056b3; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }
+        
+        /* Toast */
+        #toast { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 50px; padding: 16px; position: fixed; z-index: 100; bottom: 30px; left: 50%; transform: translateX(-50%); }
+        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            body { flex-direction: column; height: auto; overflow: auto; }
+            .sidebar { width: 100%; flex-direction: row; overflow-x: auto; padding: 10px; border-bottom: 1px solid #ddd; position: sticky; top: 0; z-index: 99; }
+            .logo { display: none; }
+            .nav-btn { white-space: nowrap; margin: 0 5px; padding: 8px 12px; }
+            .main-content { padding: 15px; }
+            .search-box { top: 0; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <div class="logo">📘 REIWA KB</div>
+        <button class="nav-btn active" onclick="showTab('tech')">🛠️ Knowledge Base</button>
+        <button class="nav-btn btn-wa" onclick="showTab('wa')">💬 Template WA</button>
+        <div style="flex:1"></div>
+        <button class="nav-btn btn-add" onclick="showTab('add')">➕ Tambah Data</button>
+        <button class="nav-btn" onclick="showTab('setting')">⚙️ Pengaturan</button>
+    </div>
+
+    <div class="main-content">
+        
+        <div id="view-area">
+            <div class="search-box">
+                <h2 id="page-title" style="margin-top:0;">Panduan Teknis</h2>
+                <input type="text" id="search" placeholder="Cari masalah, error, atau tipe..." autocomplete="off">
+                <div id="count" style="text-align: right; font-size: 12px; color: #888; margin-top: 5px;"></div>
+            </div>
+            <div id="card-container"></div>
+        </div>
+
+        <div id="input-area">
+            <h2 style="margin-top:0;">Tambah Data Baru</h2>
             
-            // Deteksi otomatis separator (; atau ,)
-            const firstLine = text.split('\n')[0];
-            const separator = firstLine.includes(';') ? ';' : ',';
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; border: 2px dashed #ccc; text-align: center; margin-bottom: 20px;">
+                <p style="margin:0 0 10px 0; font-weight:bold;">Import dari Excel (CSV)</p>
+                <input type="file" id="csvFile" accept=".csv" onchange="importCSV(this)">
+                <p style="font-size:12px; color:#666; margin-top:5px;">Header: type, title, model, content</p>
+            </div>
+
+            <hr style="border:0; border-top:1px solid #eee; margin: 20px 0;">
+
+            <form onsubmit="saveManual(event)">
+                <div class="form-group">
+                    <label>Tipe:</label>
+                    <select id="in_type">
+                        <option value="tech">🛠️ Knowledge Base (Teknis)</option>
+                        <option value="wa">💬 Template WA</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Judul:</label>
+                    <input type="text" id="in_title" required placeholder="Contoh: Error E1">
+                </div>
+                <div class="form-group">
+                    <label>Model:</label>
+                    <input type="text" id="in_model" placeholder="Contoh: DB-3301C">
+                </div>
+                <div class="form-group">
+                    <label>Isi Konten:</label>
+                    <textarea id="in_content" required placeholder="Isi jawaban di sini..."></textarea>
+                </div>
+                <button type="submit" class="btn-save">SIMPAN</button>
+            </form>
+        </div>
+
+        <div id="setting-area">
+            <h2>Pengaturan</h2>
+            <p>Total Data: <b id="total-data">0</b></p>
+            <button onclick="resetData()" style="background:red; color:white; border:none; padding:10px; border-radius:5px; cursor:pointer;">⚠️ Hapus Semua Data (Reset)</button>
+        </div>
+
+    </div>
+
+    <div id="toast">Teks Disalin!</div>
+
+    <script>
+        // --- DATA AWAL (DEFAULT) ---
+        const defaultData = [
+            { type: 'tech', title: "Spesifikasi Daya (DB-3301C)", content: "Tegangan 220V/50Hz. Daya Pemanas 500W. Daya Total 580W. Kompresor 0.74A.", model: "DB-3301C" },
+            { type: 'tech', title: "Troubleshooting: Alarm Bunyi", content: "Sensor mendeteksi galon habis. Ganti galon. Jika masih bunyi, buka-tutup pintu untuk reset sensor.", model: "ALL DB Series" },
+            { type: 'wa', title: "Sapaan Customer", content: "Halo Kak! Ada yang bisa kami bantu mengenai produk REIWA?", model: "Umum" },
+            { type: 'wa', title: "Keluhan Air Tidak Dingin", content: "Mohon maaf Kak. Pastikan sakelar HIJAU di belakang unit sudah ON. Unit butuh waktu ±1 jam untuk dingin maksimal.", model: "ALL DB Series" }
+        ];
+
+        // --- LOAD DATA ---
+        let kbData = [];
+        try {
+            const saved = localStorage.getItem('reiwa_data_v4');
+            kbData = saved ? JSON.parse(saved) : defaultData;
+        } catch (e) {
+            console.error("Data Corrupt, Resetting...");
+            kbData = defaultData;
+        }
+
+        let activeTab = 'tech';
+
+        // --- NAVIGATION ---
+        function showTab(tab) {
+            activeTab = tab;
             
-            Papa.parse(text, {
+            // Hide all
+            document.getElementById('view-area').style.display = 'none';
+            document.getElementById('input-area').style.display = 'none';
+            document.getElementById('setting-area').style.display = 'none';
+            
+            // Reset Nav Buttons
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+
+            if (tab === 'add') {
+                document.getElementById('input-area').style.display = 'block';
+                document.querySelector('.btn-add').classList.add('active');
+            } else if (tab === 'setting') {
+                document.getElementById('setting-area').style.display = 'block';
+                document.getElementById('total-data').innerText = kbData.length;
+            } else {
+                document.getElementById('view-area').style.display = 'block';
+                document.getElementById('page-title').innerText = tab === 'tech' ? "Panduan Teknis" : "Template Balasan WA";
+                
+                // Highlight button
+                const btnIndex = tab === 'tech' ? 0 : 1;
+                document.querySelectorAll('.nav-btn')[btnIndex].classList.add('active');
+                
+                renderData();
+            }
+        }
+
+        // --- RENDER DATA ---
+        function renderData() {
+            const container = document.getElementById('card-container');
+            const searchVal = document.getElementById('search').value.toLowerCase();
+            
+            container.innerHTML = '';
+            
+            const filtered = kbData.filter(item => {
+                return item.type === activeTab && (
+                    (item.title && item.title.toLowerCase().includes(searchVal)) ||
+                    (item.content && item.content.toLowerCase().includes(searchVal)) ||
+                    (item.model && item.model.toLowerCase().includes(searchVal))
+                );
+            });
+
+            document.getElementById('count').innerText = filtered.length + " Data Ditemukan";
+
+            if(filtered.length === 0) {
+                container.innerHTML = '<p style="text-align:center; color:#999; margin-top:50px;">Tidak ada data.</p>';
+                return;
+            }
+
+            filtered.forEach((item) => {
+                // Cari index asli di database utama untuk fungsi hapus
+                const realIndex = kbData.indexOf(item);
+                
+                const card = document.createElement('div');
+                card.className = `card ${item.type}`;
+                card.innerHTML = `
+                    <button class="btn-delete" onclick="deleteItem(${realIndex})">&times;</button>
+                    <div class="card-header">
+                        <div class="card-title">${item.title}</div>
+                        <span class="badge">${item.model || 'General'}</span>
+                    </div>
+                    <div class="card-content">${item.content}</div>
+                    <button class="btn-copy" onclick="copyText(this)">📋 Salin</button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // --- FUNCTIONS ---
+        document.getElementById('search').addEventListener('input', renderData);
+
+        function copyText(btn) {
+            const text = btn.previousElementSibling.innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                const t = document.getElementById('toast');
+                t.className = "show";
+                setTimeout(() => t.className = "", 3000);
+            });
+        }
+
+        function saveManual(e) {
+            e.preventDefault();
+            const newItem = {
+                type: document.getElementById('in_type').value,
+                title: document.getElementById('in_title').value,
+                model: document.getElementById('in_model').value,
+                content: document.getElementById('in_content').value
+            };
+            kbData.push(newItem);
+            saveToStorage();
+            alert("Data Tersimpan!");
+            document.forms[0].reset();
+            showTab(newItem.type);
+        }
+
+        function deleteItem(index) {
+            if(confirm("Hapus data ini?")) {
+                kbData.splice(index, 1);
+                saveToStorage();
+                renderData();
+            }
+        }
+
+        function resetData() {
+            if(confirm("YAKIN HAPUS SEMUA? Data akan hilang permanen.")) {
+                kbData = defaultData;
+                saveToStorage();
+                alert("Data di-reset ke default.");
+                location.reload();
+            }
+        }
+
+        function saveToStorage() {
+            localStorage.setItem('reiwa_data_v4', JSON.stringify(kbData));
+        }
+
+        // --- CSV IMPORT ---
+        function importCSV(input) {
+            const file = input.files[0];
+            if(!file) return;
+
+            Papa.parse(file, {
                 header: true,
                 skipEmptyLines: true,
-                delimiter: separator, // Pakai separator yang dideteksi
-                transformHeader: function(h) {
-                    return h.trim().toLowerCase(); // Paksa header jadi huruf kecil & hapus spasi
-                },
-                complete: function(results) {
-                    const newData = results.data;
+                complete: function(res) {
                     let count = 0;
-                    
-                    if (newData.length === 0) {
-                        alert("File terbaca tapi kosong. Pastikan format Excel benar.");
-                        return;
-                    }
-
-                    // Debugging: Cek kolom pertama
-                    console.log("Kolom yang terbaca:", Object.keys(newData[0]));
-
-                    newData.forEach(row => {
-                        // Cek variasi nama kolom agar lebih fleksibel
-                        // Mengatasi masalah jika user nulis "Content" atau "Isi" atau "Jawaban"
-                        const type = row.type || row.jenis || 'tech';
-                        const title = row.title || row.judul || row.pertanyaan;
-                        const content = row.content || row.isi || row.jawaban || row.solusi;
-                        const model = row.model || 'General';
-                        const category = row.category || row.kategori || 'General';
-
-                        if (title && content) {
+                    res.data.forEach(row => {
+                        if(row.title && row.content) {
                             kbData.push({
-                                type: type.toLowerCase().trim().includes('wa') ? 'wa' : 'tech', // Auto detect WA/Tech
-                                title: title,
-                                model: model,
-                                category: category,
-                                content: content
+                                type: (row.type && row.type.includes('wa')) ? 'wa' : 'tech',
+                                title: row.title,
+                                model: row.model || 'General',
+                                content: row.content
                             });
                             count++;
                         }
                     });
-
-                    if (count > 0) {
-                        saveToStorage();
-                        showToast(`Berhasil! ${count} data baru ditambahkan.`);
-                        switchTab('tech');
-                    } else {
-                        alert("Gagal import! Pastikan Excel punya kolom: 'Title' dan 'Content'.\n(Cek console log untuk detail).");
-                    }
+                    saveToStorage();
+                    alert(count + " Data berhasil diimport!");
+                    showTab('tech');
                 },
                 error: function(err) {
-                    alert("Error Parsing: " + err.message);
+                    alert("Gagal baca CSV: " + err.message);
                 }
             });
-        };
-        reader.readAsText(file);
-    }
-
-    // --- NAVIGATION & RENDER ---
-    function switchTab(tab) {
-        currentTab = tab;
-        document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
-        Object.values(views).forEach(el => el.style.display = 'none');
-
-        if(tab === 'add') {
-            views.add.style.display = 'block';
-            document.querySelector('.add-mode').classList.add('active');
-        } else if (tab === 'setting') {
-            views.setting.style.display = 'block';
-            document.getElementById('total-data').innerText = kbData.length;
-            document.querySelector('.setting-mode').classList.add('active');
-        } else {
-            views.view.style.display = 'block';
-            if(tab === 'tech') {
-                titleEl.innerText = "🛠️ Knowledge Base";
-                document.querySelectorAll('.nav-btn')[0].classList.add('active');
-            } else {
-                titleEl.innerText = "💬 Template WA";
-                document.querySelectorAll('.nav-btn')[1].classList.add('active');
-            }
-            renderData();
-        }
-    }
-
-    function renderData() {
-        const query = searchInput.value.toLowerCase();
-        const filtered = kbData.filter(item => {
-            return item.type === currentTab && (
-                (item.title && item.title.toLowerCase().includes(query)) || 
-                (item.content && item.content.toLowerCase().includes(query)) ||
-                (item.model && item.model.toLowerCase().includes(query))
-            );
-        });
-
-        document.getElementById('result-count').innerText = `${filtered.length} Data`;
-        grid.innerHTML = '';
-
-        if(filtered.length === 0) {
-            grid.innerHTML = '<div style="text-align:center; padding:40px; color:#999;">Tidak ada data.</div>';
-            return;
         }
 
-        filtered.forEach((item, index) => {
-            const originalIndex = kbData.indexOf(item);
-            const card = document.createElement('div');
-            card.className = `card type-${item.type}`;
-            card.innerHTML = `
-                <button class="btn-delete" onclick="deleteItem(${originalIndex})" title="Hapus">&times;</button>
-                <div class="card-header">
-                    <div class="card-title">${item.title}</div>
-                    <div><span class="badge badge-model">${item.model}</span></div>
-                </div>
-                <div class="card-content">${item.content.replace(/\n/g, '<br>')}</div>
-                <button class="btn-copy" onclick="copyText(this)">📋 Salin</button>
-            `;
-            grid.appendChild(card);
-        });
-    }
-
-    // --- PDF IMPORT ---
-    async function handlePdfUpload(input) {
-        const file = input.files[0];
-        if (!file) return;
-        const loader = document.getElementById('pdfLoader');
-        loader.style.display = 'block';
-        const fileReader = new FileReader();
-        fileReader.onload = async function() {
-            const typedarray = new Uint8Array(this.result);
-            try {
-                const pdf = await pdfjsLib.getDocument(typedarray).promise;
-                let fullText = "";
-                for (let i = 1; i <= pdf.numPages; i++) {
-                    const page = await pdf.getPage(i);
-                    const textContent = await page.getTextContent();
-                    fullText += textContent.items.map(item => item.str).join(' ') + "\n\n";
-                }
-                document.getElementById('new-title').value = "Hasil PDF: " + file.name;
-                document.getElementById('new-model').value = "PDF Import";
-                document.getElementById('new-content').value = fullText;
-                showToast("PDF terbaca! Silakan edit.");
-            } catch (error) { alert("Gagal baca PDF: " + error.message); } 
-            finally { loader.style.display = 'none'; }
-        };
-        fileReader.readAsArrayBuffer(file);
-    }
-
-    // --- CRUD FUNCTIONS ---
-    function saveData(e) {
-        e.preventDefault();
-        const newItem = {
-            type: document.getElementById('new-type').value,
-            title: document.getElementById('new-title').value,
-            model: document.getElementById('new-model').value,
-            content: document.getElementById('new-content').value
-        };
-        kbData.push(newItem);
-        saveToStorage();
-        document.getElementById('addForm').reset();
-        showToast("Tersimpan!");
-        switchTab(newItem.type);
-    }
-
-    function deleteItem(index) {
-        if(confirm('Hapus data ini?')) { kbData.splice(index, 1); saveToStorage(); renderData(); }
-    }
-
-    function clearAllData() {
-        if(confirm('YAKIN HAPUS SEMUA?')) { kbData = []; saveToStorage(); location.reload(); }
-    }
-
-    function saveToStorage() { localStorage.setItem('reiwa_kb_v3', JSON.stringify(kbData)); }
-    function copyText(btn) { navigator.clipboard.writeText(btn.previousElementSibling.innerText).then(() => showToast("Teks disalin!")); }
-    function showToast(msg) { const t = document.getElementById('toast'); t.innerText = msg; t.className = "show"; setTimeout(() => t.className = "", 3000); }
-
-    searchInput.addEventListener('input', renderData);
-    switchTab('tech');
-</script>
+        // Init
+        showTab('tech');
+    </script>
+</body>
+</html>
