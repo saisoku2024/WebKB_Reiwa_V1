@@ -4,29 +4,430 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>REIWA Knowledge Base</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* --- 1. DESAIN DASAR (CSS) --- */
+        :root {
+            --primary: #0056b3; /* Biru REIWA */
+            --primary-dark: #004494;
+            --bg-color: #f0f2f5;
+            --card-bg: #ffffff;
+            --text-main: #333;
+            --text-muted: #666;
+            --border-radius: 12px;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        /* --- 2. HEADER --- */
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-top: 20px;
+        }
+        header h1 {
+            color: var(--primary);
+            margin: 0;
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+        header p {
+            color: var(--text-muted);
+            margin-top: 8px;
+            font-size: 1.1rem;
+        }
+
+        /* --- 3. KOLOM PENCARIAN (STICKY) --- */
+        .search-container {
+            position: sticky;
+            top: 20px;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            margin-bottom: 25px;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        input#search {
+            width: 100%;
+            padding: 16px 20px;
+            font-size: 16px;
+            border: 2px solid #e1e4e8;
+            border-radius: 8px;
+            outline: none;
+            transition: all 0.3s ease;
+            box-sizing: border-box; /* Agar padding tidak merusak lebar */
+        }
+
+        input#search:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(0, 86, 179, 0.1);
+        }
+
+        .results-count {
+            text-align: right;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-top: 8px;
+            margin-right: 5px;
+        }
+
+        /* --- 4. KARTU JAWABAN (CARD) --- */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            border-left: 5px solid var(--primary);
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+
+        .card-title {
+            font-weight: 700;
+            font-size: 1.15rem;
+            color: #2c3e50;
+            flex: 1;
+        }
+
+        /* Badge / Label */
+        .badge-group {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .badge {
+            font-size: 0.75rem;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .badge-model { background-color: #e3f2fd; color: #0d47a1; }
+        .badge-category { background-color: #e8f5e9; color: #1b5e20; }
+
+        /* Isi Konten */
+        .card-content {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            color: #444;
+            white-space: pre-wrap; /* Agar enter/baris baru terbaca */
+            font-family: 'Consolas', 'Monaco', monospace; /* Font teknis */
+            line-height: 1.7;
+            border: 1px solid #eaecf0;
+        }
+
+        /* Tombol Copy */
+        .btn-copy {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-top: 15px;
+            display: inline-flex;
+            align-items: center;
+            transition: background 0.2s;
+        }
+        .btn-copy:hover { background-color: var(--primary-dark); }
+        .btn-copy:active { transform: scale(0.98); }
+        .btn-copy svg { margin-right: 8px; width: 16px; height: 16px; fill: white; }
+
+        /* Notifikasi Toast */
+        #toast {
+            visibility: hidden;
+            min-width: 250px;
+            background-color: #333;
+            color: #fff;
+            text-align: center;
+            border-radius: 50px;
+            padding: 16px;
+            position: fixed;
+            z-index: 999;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+
+        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+
+        /* Responsif untuk HP */
+        @media (max-width: 600px) {
+            .card-header { flex-direction: column; }
+            .badge-group { margin-top: 5px; }
+            input#search { padding: 12px 15px; font-size: 15px; }
+        }
+    </style>
 </head>
 <body>
 
     <div class="container">
-        <header class="header">
-            <h1><i class="fa-solid fa-book-open"></i> REIWA Knowledge Base</h1>
+        <header>
+            <h1>REIWA Knowledge Base</h1>
             <p>Pusat Panduan Teknis & Template Balasan WA</p>
         </header>
 
-        <div class="search-wrapper">
-            <input type="text" id="search" placeholder="🔍 Cari kendala, tipe, atau kode error (misal: E1, Tidak Dingin, DB-3301)..." autofocus>
-            <div id="count">Menampilkan semua data</div>
+        <div class="search-container">
+            <input type="text" id="search" placeholder="🔍 Ketik kendala, tipe, atau error (Cth: E1, Tidak Dingin, DB-3301)..." autofocus>
+            <div class="results-count" id="count">Memuat data...</div>
         </div>
 
-        <div id="results" class="results-grid">
+        <div id="results">
             </div>
     </div>
 
-    <div id="toast">Teks berhasil disalin!</div>
+    <div id="toast">✅ Teks berhasil disalin!</div>
 
-    <script src="data.js"></script>
-    <script src="script.js"></script>
+    <script>
+        // --- 5. DATABASE (DATA ANDA) ---
+        const kbData = [
+            {
+                title: "Spesifikasi Daya & Tegangan (DB-3301C)",
+                content: "Tegangan 220V/50Hz. Daya Pemanas 500 Watt. Daya Total 580 Watt. Arus Pendingin 0.74 A. Menggunakan sistem Kompresor.",
+                category: "Spesifikasi/Kelistrikan",
+                model: "DB-3301C",
+                tags: "technical, power"
+            },
+            {
+                title: "Spesifikasi Suhu & Kapasitas (DB-3301C)",
+                content: "Suhu Panas mencapai 94°C. Suhu Dingin mencapai 6°C. Kapasitas Tangki Panas 0.8 Liter, Tangki Dingin 2.8 Liter.",
+                category: "Spesifikasi/Kinerja",
+                model: "DB-3301C",
+                tags: "technical, temperature, capacity"
+            },
+            {
+                title: "Fitur: Sterilisasi UV-C (DB-3301C/3104C)",
+                content: "Indikator UV-C akan berkedip otomatis selama 30 menit setiap kali tangki air terisi penuh. Ini menandakan proses sterilisasi bakteri sedang berjalan. Setelah selesai, lampu akan menyala diam (standby).",
+                category: "Pengoperasian/Fitur",
+                model: "DB-3301C, DB-3104C",
+                tags: "feature, sterilization"
+            },
+            {
+                title: "Pengaturan Mode Penjadwalan (DB-3301C)",
+                content: "Unit memiliki 3 mode:\n1. Custom (24 jam aktif).\n2. Home (Aktif jam 06-08, 11-14, 17-22).\n3. Office (Aktif jam 07:30-20:00).\nTekan tombol [SET] lalu [UP/DOWN] untuk memilih mode.",
+                category: "Pengoperasian/Mode",
+                model: "DB-3301C",
+                tags: "operation, scheduling"
+            },
+            {
+                title: "Prosedur Penggantian Galon",
+                content: "1. Tarik baki galon keluar.\n2. Lepaskan tutup galon baru.\n3. Masukkan pipa adaptor ke dalam galon dan tekan hingga bunyi 'klik'.\n4. Masukkan galon ke kabinet dan tutup pintu rapat-rapat.",
+                category: "Pengoperasian/Galon",
+                model: "ALL DB Series",
+                tags: "operation, refill"
+            },
+            {
+                title: "Troubleshooting: Alarm Berbunyi",
+                content: "Penyebab: Sensor mendeteksi air galon habis.\nSolusi: Ganti galon dengan yang baru. Jika alarm tetap berbunyi, buka-tutup pintu kabinet untuk mereset sensor, atau cabut steker sebentar.",
+                category: "Troubleshooting/Alarm",
+                model: "ALL DB Series",
+                tags: "warning, error"
+            },
+            {
+                title: "Troubleshooting: Air Tidak Panas",
+                content: "1. Cek sakelar pemanas (MERAH) di belakang unit (harus ON).\n2. Cek indikator pemanas di depan (jika berkedip berarti sedang memanas, tunggu hingga stabil).\n3. Jika terlalu banyak air panas diambil, tunggu 15-20 menit untuk pemanasan ulang.",
+                category: "Troubleshooting/Suhu",
+                model: "ALL DB Series",
+                tags: "repair, heating"
+            },
+            {
+                title: "Troubleshooting: Air Tidak Dingin",
+                content: "1. Cek sakelar pendingin (HIJAU) di belakang unit (harus ON).\n2. Cek indikator pendingin (jika berkedip berarti kompresor sedang bekerja).\n3. Pastikan jarak belakang unit minimal 20cm untuk sirkulasi udara.",
+                category: "Troubleshooting/Suhu",
+                model: "ALL DB Series",
+                tags: "repair, cooling"
+            },
+            {
+                title: "Troubleshooting: Kode Error E1/E2/E3 (Digital)",
+                content: "Indikasi kesalahan sistem pada model digital.\nSolusi: Matikan tombol daya (Power), tunggu ±5 menit, kemudian hidupkan kembali untuk mereset sistem. Jika berlanjut, hubungi teknisi.",
+                category: "Troubleshooting/Error",
+                model: "DB-3301C",
+                tags: "error, digital"
+            },
+            {
+                title: "Prosedur Pengurasan Tangki (Kuras)",
+                content: "Wajib dilakukan jika unit tidak dipakai lama atau saat pemindahan.\n1. Matikan sakelar & cabut steker.\n2. Siapkan wadah di belakang unit.\n3. Buka tutup pembuangan (drain cap).\n4. Biarkan air panas dan dingin keluar hingga habis.",
+                category: "Perawatan/Kuras",
+                model: "ALL DB Series",
+                tags: "maintenance, drain"
+            },
+            {
+                title: "Instalasi: Pemasangan Kaki Penahan (Opsional)",
+                content: "Jika unit diletakkan pada permukaan miring (maks 15-25 derajat), pasang Kaki Penahan di bagian belakang bawah menggunakan sekrup dan fisher ke lantai untuk mencegah unit roboh.",
+                category: "Instalasi/Keamanan",
+                model: "DB-3104C, DB-2304C, DB-3301C",
+                tags: "installation, safety"
+            },
+            {
+                title: "Instalasi Awal (Penting)",
+                content: "Setelah unit dipasang dan galon masuk:\n1. Tunggu pengisian tangki ±5 menit.\n2. Pastikan air keluar dari kran panas/dingin SEBELUM menyalakan sakelar di belakang untuk mencegah kerusakan elemen pemanas (dry heating).",
+                category: "Instalasi/Awal",
+                model: "ALL DB Series",
+                tags: "installation, safety"
+            },
+            {
+                title: "Fitur: Child Lock Keran Panas (Model Tombol)",
+                content: "Pada model DB-2301/2304/3301, tombol air panas memiliki geseran merah. Geser tombol merah ke samping sebelum menekan tombol ke bawah.",
+                category: "Pengoperasian/Safety",
+                model: "DB-2301, DB-2304C, DB-3301C",
+                tags: "safety, operation"
+            },
+            {
+                title: "Fitur: Child Lock (Panel Sentuh DB-3104C)",
+                content: "Ketuk tombol 'Safety Lock' (Gembok) terlebih dahulu untuk membuka kunci, kemudian sentuh dan tahan tombol 'HOT' untuk mengeluarkan air panas. Tombol akan mengunci otomatis setelah 2 detik.",
+                category: "Pengoperasian/Safety",
+                model: "DB-3104C",
+                tags: "operation, safety"
+            },
+            {
+                title: "Instalasi: Jarak Penempatan",
+                content: "Unit harus ditempatkan di area rata dan kering. Wajib memberi jarak minimal 20 cm dari dinding belakang untuk sirkulasi udara kondensor/pembuangan panas.",
+                category: "Instalasi/Posisi",
+                model: "ALL DB Series",
+                tags: "installation, ventilation"
+            },
+            {
+                title: "Fitur: Pengatur Ketinggian Keran (DB-3104C)",
+                content: "Saluran keluar air (nozzle) dapat dinaik-turunkan. Tarik nozzle ke bawah untuk botol tinggi, dorong ke atas untuk gelas pendek.",
+                category: "Pengoperasian/Fitur",
+                model: "DB-3104C",
+                tags: "feature, adjustable"
+            },
+            {
+                title: "Mengatur Lebar Tatakan (Baki Tetes)",
+                content: "Tatakan pada baki tetes dapat dilebarkan ke depan untuk menahan wadah (panci/mangkok) hingga diameter 16 cm.",
+                category: "Pengoperasian/Fitur",
+                model: "DB-3301C, DB-3104C",
+                tags: "feature, tray"
+            },
+            {
+                title: "Troubleshooting: Air Keran Normal Menjadi Dingin/Panas",
+                content: "Ini normal jika keran normal jarang digunakan. Suhu dari tangki dingin/panas merambat ke saluran normal. Buang 1 gelas air dari keran normal untuk mendapatkan suhu biasa kembali.",
+                category: "Troubleshooting/Suhu",
+                model: "ALL DB Series",
+                tags: "troubleshooting, temperature"
+            }
+        ];
+
+        // --- 6. LOGIKA PENCARIAN & RENDER ---
+        const searchInput = document.getElementById('search');
+        const resultsContainer = document.getElementById('results');
+        const countLabel = document.getElementById('count');
+
+        function renderCards(data) {
+            resultsContainer.innerHTML = '';
+            countLabel.innerText = `Menampilkan ${data.length} hasil`;
+
+            if (data.length === 0) {
+                resultsContainer.innerHTML = `
+                    <div style="text-align:center; padding:40px; color:#888;">
+                        <p style="font-size:3rem; margin-bottom:10px;">🤔</p>
+                        <p>Tidak ditemukan hasil. Coba kata kunci lain.</p>
+                    </div>`;
+                return;
+            }
+
+            data.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                
+                // SVG Icon untuk tombol Copy
+                const copyIcon = `<svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>`;
+
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div class="card-title">${item.title}</div>
+                        <div class="badge-group">
+                            <span class="badge badge-model">${item.model}</span>
+                            <span class="badge badge-category">${item.category}</span>
+                        </div>
+                    </div>
+                    <div class="card-content">${item.content}</div>
+                    <button class="btn-copy" onclick="copyToClipboard(this)">
+                        ${copyIcon} Salin Jawaban
+                    </button>
+                `;
+                resultsContainer.appendChild(card);
+            });
+        }
+
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            const filteredData = kbData.filter(item => {
+                return (
+                    item.title.toLowerCase().includes(query) || 
+                    item.content.toLowerCase().includes(query) ||
+                    item.model.toLowerCase().includes(query) ||
+                    item.tags.toLowerCase().includes(query)
+                );
+            });
+            renderCards(filteredData);
+        });
+
+        function copyToClipboard(btn) {
+            const contentDiv = btn.previousElementSibling;
+            const textToCopy = contentDiv.innerText;
+            
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                showToast();
+            }).catch(err => {
+                alert('Gagal menyalin: ' + err);
+            });
+        }
+
+        function showToast() {
+            const x = document.getElementById("toast");
+            x.className = "show";
+            setTimeout(function(){ x.className = x.className.replace("show", ""); }, 3000);
+        }
+
+        // Tampilkan semua data saat pertama kali buka
+        renderCards(kbData);
+
+    </script>
 </body>
 </html>
