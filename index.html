@@ -3,136 +3,216 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>REIWA Smart Knowledge Base</title>
+    <title>REIWA Smart Base</title>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@500;700;800&display=swap" rel="stylesheet">
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        /* --- 1. THEME VARIABLES --- */
+        /* --- VARIABLE TEMA --- */
         :root {
-            --bg-body: #f8f9fc;
+            --primary: #0056b3;
+            --primary-light: #eef4ff;
+            --bg-body: #f3f5f9;
             --bg-sidebar: #ffffff;
             --bg-card: #ffffff;
-            --bg-input: #ffffff;
-            --bg-chip: #eef2f6;
-            --text-main: #1a1f36;
+            --text-main: #334155;
             --text-muted: #64748b;
             --border: #e2e8f0;
-            --primary: #0056b3; 
-            --primary-soft: #e3f2fd;
-            --wa-color: #25D366;
-            --wa-soft: #e8f5e9;
-            --tech-color: #475569;
-            --tech-soft: #f1f5f9;
-            --highlight: #fff3cd; /* Warna Stabilo Kuning Lembut */
-            --highlight-text: #856404;
-            --radius: 12px;
+            --wa-bg: #dcfce7;
+            --wa-text: #14532d;
+            --wa-border: #25d366;
+            --tech-bg: #f8fafc;
+            --tech-border: #475569;
+            --highlight: #fef08a; /* Kuning Stabilo */
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+            --radius: 16px;
         }
 
+        /* DARK MODE VARIABLES */
         [data-theme="dark"] {
             --bg-body: #0f172a;
             --bg-sidebar: #1e293b;
             --bg-card: #1e293b;
-            --bg-input: #334155;
-            --bg-chip: #334155;
             --text-main: #f1f5f9;
             --text-muted: #94a3b8;
             --border: #334155;
-            --primary-soft: #1e3a8a;
-            --wa-soft: #064e3b;
-            --tech-soft: #334155;
-            --highlight: #b45309; /* Stabilo oranye gelap untuk mode gelap */
-            --highlight-text: #fff;
+            --primary: #60a5fa;
+            --primary-light: #1e3a8a;
+            --wa-bg: #064e3b;
+            --wa-text: #a7f3d0;
+            --tech-bg: #334155;
+            --highlight: #854d0e; /* Stabilo Gelap */
         }
 
-        /* --- 2. BASE STYLES --- */
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg-body); color: var(--text-main); margin: 0; padding: 0; display: flex; height: 100vh; overflow: hidden; }
-        h1, h2, h3, .logo, .card-title { font-family: 'Outfit', sans-serif; }
+        /* --- BASE RESET --- */
+        * { box-sizing: border-box; }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+            transition: background 0.3s, color 0.3s;
+        }
 
-        /* --- FITUR BARU: HIGHLIGHT STYLE --- */
-        mark.highlight {
-            background-color: var(--highlight);
-            color: var(--highlight-text);
-            padding: 0 4px;
-            border-radius: 4px;
+        h1, h2, h3, button, input, select, .logo, .nav-btn {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        /* --- SIDEBAR --- */
+        .sidebar {
+            width: 280px;
+            background: var(--bg-sidebar);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 24px;
+            flex-shrink: 0;
+            transition: background 0.3s;
+        }
+
+        .logo {
+            font-size: 1.6rem;
             font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 40px;
+            display: flex; align-items: center; gap: 10px;
+        }
+        
+        .menu-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+            font-weight: 600;
+            padding-left: 12px;
         }
 
-        /* --- 3. SIDEBAR --- */
-        .sidebar { width: 280px; background-color: var(--bg-sidebar); border-right: 1px solid var(--border); display: flex; flex-direction: column; padding: 24px; flex-shrink: 0; }
-        .logo { font-size: 1.5rem; font-weight: 800; color: var(--primary); margin-bottom: 40px; display: flex; align-items: center; gap: 12px; }
-        .nav-btn { background: none; border: none; width: 100%; padding: 14px 16px; text-align: left; font-size: 0.95rem; font-weight: 500; color: var(--text-muted); cursor: pointer; border-radius: var(--radius); margin-bottom: 6px; transition: all 0.2s; display: flex; align-items: center; gap: 12px; }
-        .nav-btn:hover { background-color: var(--bg-body); color: var(--text-main); }
-        .nav-btn.active { background-color: var(--primary-soft); color: var(--primary); font-weight: 600; }
-        .theme-switch { margin-top: auto; padding-top: 20px; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-        
-        /* --- 4. MAIN CONTENT --- */
-        .main-content { flex: 1; padding: 0; overflow-y: auto; display: flex; flex-direction: column; position: relative; }
-        .top-bar { position: sticky; top: 0; z-index: 50; background-color: var(--bg-body); padding: 30px 40px 10px 40px; backdrop-filter: blur(8px); }
-        .search-container { position: relative; max-width: 800px; }
-        input#search { width: 100%; padding: 16px 20px 16px 50px; font-size: 1rem; background-color: var(--bg-card); border: 2px solid var(--border); border-radius: 12px; color: var(--text-main); outline: none; transition: all 0.2s; box-sizing: border-box; }
-        input#search:focus { border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-soft); }
-        .search-icon { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: var(--text-muted); pointer-events: none; }
-        
-        .chips-container { display: flex; gap: 10px; margin-top: 15px; flex-wrap: wrap; }
-        .chip { padding: 8px 16px; background-color: var(--bg-chip); border: 1px solid var(--border); border-radius: 20px; font-size: 0.85rem; font-weight: 500; color: var(--text-muted); cursor: pointer; transition: all 0.2s; }
-        .chip:hover { background-color: var(--primary); color: white; border-color: var(--primary); }
+        .nav-btn {
+            background: transparent;
+            border: none;
+            width: 100%;
+            padding: 12px 16px;
+            text-align: left;
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            cursor: pointer;
+            border-radius: 12px;
+            margin-bottom: 5px;
+            transition: all 0.2s ease;
+        }
 
-        #results-grid { padding: 20px 40px 40px 40px; max-width: 1000px; }
-        #result-count { margin-bottom: 20px; color: var(--text-muted); font-size: 0.9rem; }
+        .nav-btn:hover { background-color: var(--bg-body); color: var(--primary); }
+        .nav-btn.active { background-color: var(--primary-light); color: var(--primary); font-weight: 600; }
 
-        /* --- CARDS --- */
-        .card { background-color: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 20px; position: relative; border-left: 4px solid transparent; transition: transform 0.2s, box-shadow 0.2s; }
-        .card:hover { transform: translateY(-2px); box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1); border-color: var(--primary); }
-        .card.type-tech { border-left-color: var(--tech-color); }
-        .card.type-wa { border-left-color: var(--wa-color); }
-        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; gap: 15px; }
-        .card-title { font-size: 1.15rem; font-weight: 700; color: var(--text-main); margin: 0; line-height: 1.4; }
-        .badges { display: flex; gap: 8px; flex-wrap: wrap; }
-        .badge { font-size: 0.75rem; padding: 4px 10px; border-radius: 6px; font-weight: 600; letter-spacing: 0.03em; }
-        .badge.model { background-color: var(--bg-chip); color: var(--text-main); }
-        .badge.cat { background-color: var(--primary-soft); color: var(--primary); }
-        
-        .card-content { font-size: 0.95rem; line-height: 1.7; color: var(--text-muted); white-space: pre-wrap; font-family: 'Inter', sans-serif; }
-        .card.type-tech .card-content { font-family: 'Roboto Mono', 'Consolas', monospace; font-size: 0.9rem; background: var(--bg-body); padding: 12px; border-radius: 6px; border: 1px solid var(--border); }
-        .card.type-wa .card-content { background: var(--wa-soft); padding: 15px; border-radius: 8px; color: #14532d; font-style: italic; border: 1px solid transparent; }
-
-        .card-actions { margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px; padding-top: 15px; border-top: 1px solid var(--border); }
-        .btn-action { padding: 8px 16px; border-radius: 6px; font-size: 0.9rem; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: var(--bg-body); color: var(--text-main); display: flex; align-items: center; gap: 6px; transition: 0.2s; }
-        .btn-action:hover { background: var(--border); }
-        .btn-action.primary { background: var(--primary); color: white; border-color: var(--primary); }
-        .btn-action.primary:hover { background: var(--primary-dark); }
-        .btn-delete-card { color: #ef4444; border-color: #fee2e2; background: #fef2f2; }
-        .btn-delete-card:hover { background: #fee2e2; }
-
-        /* --- ADD FORM --- */
-        #add-section, #setting-section { background: var(--bg-card); margin: 40px auto; padding: 40px; border-radius: 16px; max-width: 600px; display: none; border: 1px solid var(--border); }
-        .form-group { margin-bottom: 20px; }
-        label { display: block; margin-bottom: 8px; font-weight: 600; color: var(--text-main); font-size: 0.95rem; }
-        input, select, textarea { width: 100%; padding: 12px; border: 2px solid var(--border); border-radius: 8px; background: var(--bg-input); color: var(--text-main); font-size: 1rem; box-sizing: border-box; }
-        textarea { height: 150px; resize: vertical; }
-        .btn-save { width: 100%; padding: 14px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 700; cursor: pointer; }
-
-        /* SWITCH TOGGLE */
+        /* Dark Mode Switch */
+        .theme-switch-wrapper {
+            margin-top: auto;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+        }
         .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
         .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
         .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
         input:checked + .slider { background-color: var(--primary); }
         input:checked + .slider:before { transform: translateX(20px); }
 
-        #toast { visibility: hidden; min-width: 250px; background-color: #1a1f36; color: #fff; text-align: center; border-radius: 50px; padding: 16px; position: fixed; z-index: 1000; bottom: 30px; left: 50%; transform: translateX(-50%); font-weight: 600; }
-        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
-        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
-        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+        /* --- MAIN CONTENT --- */
+        .main-content {
+            flex: 1; padding: 0; overflow-y: auto; display: flex; flex-direction: column;
+        }
+
+        /* --- TOP BAR --- */
+        .top-bar {
+            position: sticky; top: 0; z-index: 10;
+            background: var(--bg-body); /* Agar transisi dark mode mulus */
+            padding: 30px 40px 10px 40px;
+            border-bottom: 1px solid transparent;
+        }
+
+        .page-header { margin-bottom: 20px; }
+        .page-header h2 { margin: 0; font-size: 1.8rem; color: var(--text-main); font-weight: 700; }
+
+        .search-container { position: relative; max-width: 800px; }
+        input#search {
+            width: 100%; padding: 18px 25px 18px 50px;
+            font-size: 1rem; background: var(--bg-card);
+            border: 1px solid transparent; border-radius: 16px;
+            color: var(--text-main); outline: none;
+            box-shadow: var(--shadow-sm); transition: 0.3s;
+        }
+        input#search:focus { box-shadow: 0 8px 25px rgba(0,0,0, 0.1); border-color: var(--primary); }
+        .search-icon { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); opacity: 0.5; }
+
+        /* Chips */
+        .chips-wrapper { display: flex; gap: 8px; margin-top: 15px; flex-wrap: wrap; }
+        .chip { padding: 8px 16px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 20px; font-size: 0.85rem; color: var(--text-muted); cursor: pointer; transition: 0.2s; }
+        .chip:hover { background: var(--primary); color: white; border-color: var(--primary); }
+
+        #result-count { margin: 20px 0; color: var(--text-muted); font-size: 0.9rem; padding-left: 5px; }
+
+        /* --- CARD --- */
+        #results-grid { padding: 0 40px 60px 40px; max-width: 1000px; }
+        .card {
+            background: var(--bg-card); border-radius: 16px; padding: 25px; margin-bottom: 24px;
+            border: 1px solid var(--border); box-shadow: var(--shadow-sm);
+            transition: 0.3s; position: relative; border-left: 5px solid transparent;
+        }
+        .card:hover { transform: translateY(-4px); box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1); }
+        .card.type-tech { border-left-color: var(--tech-border); }
+        .card.type-wa { border-left-color: var(--wa-border); }
+
+        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 15px; gap: 15px; }
+        .card-title { font-size: 1.15rem; font-weight: 700; color: var(--text-main); margin: 0; line-height: 1.4; }
+        .badges { display: flex; gap: 8px; }
+        .badge { font-size: 0.75rem; padding: 4px 10px; border-radius: 8px; font-weight: 600; background: var(--bg-body); color: var(--text-muted); border: 1px solid var(--border); }
+
+        .card-content { font-size: 0.95rem; line-height: 1.7; color: var(--text-muted); white-space: pre-wrap; padding: 15px; border-radius: 10px; margin-top: 10px; }
+        .card.type-tech .card-content { font-family: 'Roboto Mono', monospace; background: var(--tech-bg); font-size: 0.9rem; border: 1px solid var(--border); }
+        .card.type-wa .card-content { background: var(--wa-bg); color: var(--wa-text); font-style: italic; }
+
+        /* Highlight */
+        mark.highlight { background-color: var(--highlight); color: #854d0e; padding: 2px 4px; border-radius: 4px; font-weight: 700; }
+
+        .card-actions { margin-top: 20px; display: flex; justify-content: flex-end; gap: 10px; }
+        .btn-action { padding: 10px 20px; border-radius: 10px; font-size: 0.9rem; font-weight: 600; cursor: pointer; border: none; transition: 0.2s; }
+        .btn-copy { background: var(--primary); color: white; }
+        .btn-copy:hover { background: #004494; }
+        .card.type-wa .btn-copy { background: var(--wa-border); }
+        .btn-delete { background: transparent; color: #ef4444; border: 1px solid #fee2e2; }
+        .btn-delete:hover { background: #fef2f2; }
+
+        /* --- ADD & SETTINGS --- */
+        #add-section, #setting-section { background: var(--bg-card); margin: 40px auto; padding: 40px; border-radius: 20px; max-width: 650px; border: 1px solid var(--border); display: none; }
+        .form-group { margin-bottom: 24px; }
+        label { display: block; margin-bottom: 10px; font-weight: 600; color: var(--text-main); }
+        input, select, textarea { width: 100%; padding: 14px; border: 2px solid var(--border); border-radius: 12px; background: var(--bg-card); color: var(--text-main); font-size: 1rem; }
+        .upload-box { border: 2px dashed var(--border); padding: 40px; text-align: center; border-radius: 16px; cursor: pointer; margin-bottom: 30px; }
+        .upload-box:hover { border-color: var(--primary); background: var(--primary-light); }
+
+        #toast { visibility: hidden; min-width: 250px; background: #1e293b; color: #fff; text-align: center; border-radius: 50px; padding: 16px; position: fixed; z-index: 1000; bottom: 40px; left: 50%; transform: translateX(-50%); font-weight: 600; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+        #toast.show { visibility: visible; animation: slideUp 0.3s, fadeOut 0.5s 2.5s forwards; }
+        @keyframes slideUp { from {bottom: 0; opacity: 0;} to {bottom: 40px; opacity: 1;} }
+        @keyframes fadeOut { to {opacity: 0; visibility: hidden;} }
 
         @media (max-width: 768px) {
             body { flex-direction: column; height: auto; }
-            .sidebar { width: 100%; flex-direction: row; overflow-x: auto; padding: 15px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); }
-            .logo, .theme-switch { display: none; }
-            .nav-btn { white-space: nowrap; margin: 0 5px; padding: 8px 12px; }
-            .top-bar { padding: 20px; position: static; }
-            #results-grid { padding: 0 20px 40px 20px; }
+            .sidebar { width: 100%; flex-direction: row; padding: 15px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); overflow-x: auto; }
+            .logo, .theme-switch-wrapper { display: none; }
+            .nav-btn { white-space: nowrap; margin-right: 10px; padding: 8px 12px; }
+            #results-grid { padding: 0 20px 60px 20px; }
         }
     </style>
 </head>
@@ -140,82 +220,99 @@
 
 <div class="sidebar">
     <div class="logo">📘 REIWA KB</div>
+    
     <div class="menu-label">Menu Utama</div>
     <button class="nav-btn active" onclick="switchTab('tech')">🛠️ Panduan Teknis</button>
     <button class="nav-btn" onclick="switchTab('wa')">💬 Template WA</button>
+    
     <div class="menu-label" style="margin-top: 20px;">Admin</div>
     <button class="nav-btn" onclick="switchTab('add')">➕ Import / Input</button>
     <button class="nav-btn" onclick="switchTab('setting')">⚙️ Pengaturan</button>
-    <div class="theme-switch">
-        <span class="theme-label">Mode Gelap</span>
-        <label class="switch"><input type="checkbox" id="theme-toggle" onchange="toggleTheme()"><span class="slider"></span></label>
+
+    <div class="theme-switch-wrapper">
+        <span style="font-size:0.9rem; font-weight:600; color:var(--text-muted);">Mode Gelap</span>
+        <label class="switch">
+            <input type="checkbox" id="theme-toggle" onchange="toggleTheme()">
+            <span class="slider"></span>
+        </label>
     </div>
 </div>
 
 <div class="main-content">
+    
     <div id="view-area">
         <div class="top-bar">
-            <div class="page-header"><h2 id="page-title">Panduan Teknis</h2></div>
+            <div class="page-header">
+                <h2 id="page-title">Panduan Teknis</h2>
+                <p style="color:var(--text-muted); margin-top:5px;">Cari solusi teknis dan skrip balasan dengan cepat.</p>
+            </div>
+            
             <div class="search-container">
                 <span class="search-icon">🔍</span>
-                <input type="text" id="search" placeholder="Cari masalah, kode error, atau tipe produk..." autocomplete="off">
-                <div class="chips-container">
+                <input type="text" id="search" placeholder="Ketik kata kunci (Misal: E1, Tidak Dingin, DB-3301)..." autocomplete="off">
+                <div class="chips-wrapper">
                     <div class="chip" onclick="quickSearch('AC')">AC</div>
                     <div class="chip" onclick="quickSearch('Kulkas')">Kulkas</div>
                     <div class="chip" onclick="quickSearch('Dispenser')">Dispenser</div>
-                    <div class="chip" onclick="quickSearch('Error')">Error</div>
-                    <div class="chip" onclick="quickSearch('Instalasi')">Instalasi</div>
+                    <div class="chip" onclick="quickSearch('Mesin Cuci')">Mesin Cuci</div>
+                    <div class="chip" onclick="quickSearch('Error')">Error Code</div>
                 </div>
             </div>
             <div id="result-count">Memuat data...</div>
         </div>
+
         <div id="results-grid"></div>
     </div>
 
     <div id="add-section">
-        <h2 style="text-align:center; margin-bottom: 20px;">Tambah Data Baru</h2>
-        <div style="text-align:center; padding: 30px; border: 2px dashed var(--border); border-radius: 12px; cursor: pointer; margin-bottom:30px; background-color: var(--bg-body);" onclick="document.getElementById('csvFile').click()">
-            <div style="font-size: 2.5rem; margin-bottom: 10px;">📊</div>
-            <strong>Import Excel (CSV)</strong>
-            <p style="color: var(--text-muted); font-size: 0.9rem;">Klik untuk upload</p>
+        <h2 style="text-align:center;">Tambah Data Baru</h2>
+        <p style="text-align:center; color:var(--text-muted); margin-bottom:30px;">Upload file Excel (CSV) untuk data banyak sekaligus.</p>
+        
+        <div class="upload-box" onclick="document.getElementById('csvFile').click()">
+            <div style="font-size: 3rem; margin-bottom: 15px;">📊</div>
+            <strong style="font-size:1.1rem; color:var(--primary);">Import Excel (CSV)</strong>
+            <p style="color: var(--text-muted); font-size: 0.9rem;">Klik di sini untuk memilih file</p>
             <input type="file" id="csvFile" accept=".csv" style="display:none" onchange="handleCsvUpload(this)">
         </div>
+
+        <div style="text-align:center; margin: 30px 0; color:var(--text-muted); font-weight:600;">— ATAU MANUAL —</div>
+
         <form onsubmit="saveData(event)">
-            <div class="form-group"><label>Kategori:</label><select id="new-type"><option value="tech">🛠️ Knowledge Base</option><option value="wa">💬 Template WA</option></select></div>
-            <div class="form-group"><label>Judul:</label><input type="text" id="new-title" required></div>
-            <div class="form-group"><label>Model:</label><input type="text" id="new-model"></div>
-            <div class="form-group"><label>Isi Konten:</label><textarea id="new-content" required></textarea></div>
-            <button type="submit" class="btn-save">SIMPAN DATA</button>
+            <div class="form-group"><label>Kategori Data</label><select id="new-type"><option value="tech">🛠️ Knowledge Base (Teknis)</option><option value="wa">💬 Template WA (Customer Service)</option></select></div>
+            <div class="form-group"><label>Judul</label><input type="text" id="new-title" placeholder="Contoh: Kode Error E1" required></div>
+            <div class="form-group"><label>Model</label><input type="text" id="new-model" placeholder="Contoh: DB-3301C"></div>
+            <div class="form-group"><label>Konten</label><textarea id="new-content" required></textarea></div>
+            <button type="submit" class="btn-save">SIMPAN</button>
         </form>
     </div>
 
     <div id="setting-section">
         <h2>Pengaturan</h2>
-        <p>Total Data: <strong id="total-data">0</strong></p>
-        <button onclick="clearAllData()" style="background:#ef4444; color:white; border:none; padding:12px 20px; border-radius:8px; cursor:pointer; margin-top:20px;">⚠️ Hapus SEMUA Data</button>
+        <div style="background:var(--bg-card); padding:20px; border-radius:12px; border:1px solid var(--border); margin-top:20px;">
+            <h3 style="margin-top:0;">Total Data: <span style="color:var(--primary);" id="total-data">0</span></h3>
+            <button onclick="clearAllData()" style="background:#ef4444; color:white; border:none; padding:10px 20px; border-radius:8px; cursor:pointer;">⚠️ Hapus SEMUA Data</button>
+        </div>
     </div>
 </div>
 
-<div id="toast">Berhasil!</div>
+<div id="toast">✅ Teks berhasil disalin!</div>
 
 <script>
-    // --- DATABASE & INIT ---
-    const defaultData = [
-        { type: 'tech', title: "Contoh: Spesifikasi DB-3301C", content: "Tegangan 220V/50Hz. Daya Pemanas 500W.", model: "DB-3301C" },
-        { type: 'wa', title: "Contoh: Sapaan Pelanggan", content: "Halo Kak! Ada yang bisa kami bantu?", model: "Umum" }
-    ];
-    let kbData = JSON.parse(localStorage.getItem('reiwa_kb_v5')) || defaultData;
+    // --- INIT ---
+    const defaultData = [{ type: 'tech', title: "Contoh Data", content: "Database kosong.", model: "System" }];
+    let kbData = JSON.parse(localStorage.getItem('reiwa_kb_v6')) || defaultData;
     let currentTab = 'tech';
 
-    // --- UTILS ---
-    function escapeRegExp(string) { return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
+    // --- THEME ---
     function toggleTheme() {
         const isDark = document.getElementById('theme-toggle').checked;
         document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
         localStorage.setItem('reiwa_theme', isDark ? 'dark' : 'light');
     }
-    const savedTheme = localStorage.getItem('reiwa_theme');
-    if(savedTheme === 'dark') { document.documentElement.setAttribute('data-theme', 'dark'); document.getElementById('theme-toggle').checked = true; }
+    if(localStorage.getItem('reiwa_theme') === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        document.getElementById('theme-toggle').checked = true;
+    }
 
     // --- NAVIGATION ---
     const views = { view: document.getElementById('view-area'), add: document.getElementById('add-section'), setting: document.getElementById('setting-section') };
@@ -225,7 +322,7 @@
         currentTab = tab;
         navBtns.forEach(b => b.classList.remove('active'));
         Object.values(views).forEach(el => el.style.display = 'none');
-        
+
         if(tab === 'add') { views.add.style.display = 'block'; navBtns[2].classList.add('active'); }
         else if(tab === 'setting') { views.setting.style.display = 'block'; document.getElementById('total-data').innerText = kbData.length; navBtns[3].classList.add('active'); }
         else {
@@ -236,74 +333,49 @@
         }
     }
 
-    // --- RENDER FUNCTION (WITH HIGHLIGHT) ---
+    // --- RENDER & HIGHLIGHT ---
     function renderData() {
-        const searchInput = document.getElementById('search');
-        const query = searchInput.value.toLowerCase().trim();
+        const query = document.getElementById('search').value.toLowerCase().trim();
         const grid = document.getElementById('results-grid');
-        
-        const filtered = kbData.filter(item => {
-            return item.type === currentTab && (
-                (item.title && item.title.toLowerCase().includes(query)) ||
-                (item.content && item.content.toLowerCase().includes(query)) ||
-                (item.model && item.model.toLowerCase().includes(query))
-            );
-        });
+        const filtered = kbData.filter(item => item.type === currentTab && (
+            (item.title && item.title.toLowerCase().includes(query)) ||
+            (item.content && item.content.toLowerCase().includes(query)) ||
+            (item.model && item.model.toLowerCase().includes(query))
+        ));
 
         document.getElementById('result-count').innerText = `${filtered.length} Data Ditemukan`;
-        grid.innerHTML = '';
+        grid.innerHTML = filtered.length ? '' : '<div style="text-align:center; padding:50px; color:var(--text-muted);">Tidak ada data ditemukan.</div>';
 
-        if(filtered.length === 0) {
-            grid.innerHTML = `<div style="text-align:center; padding:60px; color:var(--text-muted);"><p style="font-size:3rem; margin:0;">📭</p><p>Tidak ada data.</p></div>`;
-            return;
-        }
-
-        filtered.forEach((item) => {
+        filtered.forEach(item => {
             const index = kbData.indexOf(item);
             const card = document.createElement('div');
             card.className = `card type-${item.type}`;
             
-            // --- LOGIKA HIGHLIGHT ---
-            // Fungsi lokal untuk highlight teks
-            const highlightText = (text, keyword) => {
-                if (!keyword) return text;
-                const regex = new RegExp(`(${escapeRegExp(keyword)})`, 'gi');
-                return text.replace(regex, '<mark class="highlight">$1</mark>');
-            };
-
-            // 1. Highlight dulu di teks mentah
-            let titleHtml = highlightText(item.title, query);
-            let contentHtml = highlightText(item.content, query);
+            const highlight = (txt) => txt ? txt.replace(new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi'), '<mark class="highlight">$1</mark>') : '';
             
-            // 2. Baru convert baris baru (\n) ke <br> agar tampilan rapi
-            contentHtml = contentHtml.replace(/\n/g, '<br>');
-
             card.innerHTML = `
                 <div class="card-header">
-                    <h3 class="card-title">${titleHtml}</h3>
-                    <div class="badges">
-                        <span class="badge model">${highlightText(item.model || 'General', query)}</span>
-                        ${item.category ? `<span class="badge cat">${highlightText(item.category, query)}</span>` : ''}
-                    </div>
+                    <div class="card-title">${highlight(item.title)}</div>
+                    <div class="badges"><span class="badge model">${highlight(item.model || 'General')}</span></div>
                 </div>
-                <div class="card-content">${contentHtml}</div>
+                <div class="card-content">${highlight(item.content).replace(/\n/g, '<br>')}</div>
                 <div class="card-actions">
-                    <button class="btn-action btn-delete-card" onclick="deleteItem(${index})">Hapus</button>
-                    <button class="btn-action primary" onclick="copyText(this)">📋 Salin</button>
+                    <button class="btn-action btn-delete" onclick="deleteItem(${index})">Hapus</button>
+                    <button class="btn-action btn-copy" onclick="copyText(this)">📋 Salin</button>
                 </div>
             `;
             grid.appendChild(card);
         });
     }
 
-    // --- CSV IMPORT ---
+    // --- CSV IMPORT (ANTI-GAGAL) ---
     function handleCsvUpload(input) {
         const file = input.files[0];
         if(!file) return;
         const reader = new FileReader();
         reader.onload = function(e) {
             const text = e.target.result;
-            const delimiter = text.indexOf(';') > -1 ? ';' : ',';
+            const delimiter = text.indexOf(';') > -1 ? ';' : ','; // Auto detect
             Papa.parse(text, {
                 header: true, delimiter: delimiter, skipEmptyLines: true, transformHeader: h => h.trim().toLowerCase(),
                 complete: function(res) {
@@ -311,53 +383,38 @@
                     res.data.forEach(row => {
                         const title = row.title || row.judul;
                         const content = row.content || row.isi || row.jawaban;
-                        if(content) {
+                        if(title && content) {
                             kbData.push({
                                 type: (row.type && row.type.includes('wa')) ? 'wa' : 'tech',
-                                title: title || 'Tanpa Judul',
-                                model: row.model || 'Umum',
-                                category: row.category || 'General',
-                                content: content
+                                title: title, model: row.model || 'General', content: content
                             });
                             count++;
                         }
                     });
-                    if(count>0) { saveToStorage(); showToast(`${count} Data diimport!`); switchTab('tech'); }
-                    else { alert("Gagal import. Pastikan kolom CSV benar (type, title, content)."); }
+                    if(count > 0) { saveToStorage(); showToast(`✅ ${count} Data Diimport!`); switchTab('tech'); }
+                    else { alert("Gagal Import. Pastikan format CSV benar."); }
                 }
             });
         };
         reader.readAsText(file);
     }
 
-    // --- CRUD ---
+    // --- UTILS ---
     function saveData(e) {
         e.preventDefault();
-        const newItem = {
+        kbData.push({
             type: document.getElementById('new-type').value,
             title: document.getElementById('new-title').value,
             model: document.getElementById('new-model').value,
             content: document.getElementById('new-content').value
-        };
-        kbData.push(newItem);
-        saveToStorage();
-        document.querySelector('form').reset();
-        showToast("Tersimpan!");
-        switchTab(newItem.type);
+        });
+        saveToStorage(); document.querySelector('form').reset(); showToast("Tersimpan!"); switchTab(document.getElementById('new-type').value);
     }
-
-    function deleteItem(index) { if(confirm("Hapus?")) { kbData.splice(index, 1); saveToStorage(); renderData(); } }
-    function clearAllData() { if(confirm("YAKIN HAPUS SEMUA?")) { kbData = []; saveToStorage(); location.reload(); } }
-    function saveToStorage() { localStorage.setItem('reiwa_kb_v5', JSON.stringify(kbData)); }
+    function deleteItem(i) { if(confirm("Hapus?")) { kbData.splice(i, 1); saveToStorage(); renderData(); } }
+    function clearAllData() { if(confirm("RESET TOTAL?")) { kbData = []; saveToStorage(); location.reload(); } }
+    function saveToStorage() { localStorage.setItem('reiwa_kb_v6', JSON.stringify(kbData)); }
     function quickSearch(k) { document.getElementById('search').value = k; renderData(); }
-    
-    function copyText(btn) {
-        // Ambil text TANPA tag HTML <mark>
-        const contentDiv = btn.closest('.card').querySelector('.card-content');
-        const text = contentDiv.innerText; // innerText otomatis mengabaikan tag HTML
-        navigator.clipboard.writeText(text).then(() => showToast("Teks disalin!"));
-    }
-    
+    function copyText(btn) { navigator.clipboard.writeText(btn.closest('.card').querySelector('.card-content').innerText).then(() => showToast("Teks tersalin!")); }
     function showToast(m) { const t=document.getElementById('toast'); t.innerText=m; t.className="show"; setTimeout(()=>t.className="", 3000); }
 
     document.getElementById('search').addEventListener('input', renderData);
